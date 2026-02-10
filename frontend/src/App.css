@@ -1,0 +1,174 @@
+:root {
+  --bg: #eef2f7;
+  --panel: rgba(255,255,255,0.95);
+  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+  --radius: 16px;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --purple: #7c3aed;
+  --yellow: #ca8a04;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #eaf0f7, #f8fafc);
+  color: #0f172a;
+}
+
+.app-root {
+  min-height: 100vh;
+}
+
+/* ===== TOP BAR ===== */
+.topbar {
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+  padding: 20px 32px;
+  letter-spacing: 0.3px;
+  box-shadow: var(--shadow);
+}
+
+/* ===== LAYOUT ===== */
+.main-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr 360px;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* ===== PANELS ===== */
+.sidebar,
+.content,
+.details-panel {
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+/* ⚠️ REMOVE BLUR — it breaks drag coordinates */
+/* backdrop-filter: blur(12px); ❌ REMOVED */
+
+/* ===== HEADERS ===== */
+.section-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 16px 0 8px;
+  color: #475569;
+}
+
+/* ===== INPUTS ===== */
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ❌ REMOVED transitions that might use transform */
+
+.btn-success {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: white;
+}
+
+/* ===== COURSE LIST ===== */
+.course-item {
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-weight: 600;
+  position: relative;
+}
+
+.course-item.selected {
+  outline: 3px solid rgba(37,99,235,0.3);
+}
+
+/* ===== PLANNER ===== */
+.planner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  position: relative;
+}
+
+.semester-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  background: white;
+}
+
+/* ===== COURSE CARDS ===== */
+.course-chip {
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  text-align: center;
+  position: relative;
+}
+
+/* ===== DEPARTMENT COLORS ===== */
+.course-chip.CS, .course-item.CS {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border: 1px solid var(--blue);
+}
+
+.course-chip.MATH, .course-item.MATH {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border: 1px solid var(--green);
+}
+
+.course-chip.PHYS, .course-item.PHYS {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  border: 1px solid var(--purple);
+}
+
+.course-chip.ENGL, .course-item.ENGL {
+  background: linear-gradient(135deg, #fef9c3, #fef08a);
+  border: 1px solid var(--yellow);
+}
+
+/* ===== HARD OVERRIDE SAFETY ===== */
+.planner-grid,
+.semester-card,
+.course-chip {
+  transform: none !important;
+}
