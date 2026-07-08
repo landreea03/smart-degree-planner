@@ -3,6 +3,7 @@ node_modules
 
 .DS_Store
 *.log
+*~
 
 # Environment files (see .env.example in each workspace)
 .env

@@ -28,6 +28,8 @@ router.get("/:id/courses", (req, res) => {
       time: c.time,
       mode: c.mode,
       category: c.category,
+      yearLevel: c.year_level,
+      term: c.term,
       prereq: prereqs,
     };
   }

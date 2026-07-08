@@ -36,6 +36,8 @@ export function initSchema() {
       time TEXT DEFAULT '',
       mode TEXT DEFAULT 'In-Person',
       category TEXT DEFAULT 'Elective',
+      year_level INTEGER NOT NULL DEFAULT 1,
+      term TEXT NOT NULL DEFAULT 'Fall',
       UNIQUE(program_id, code)
     );
 

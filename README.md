@@ -6,8 +6,10 @@ A full-stack degree-planning tool: pick a program, drag courses into semesters, 
 
 ## Features
 
-- **Multiple degree programs** — Computer Science (B.S.) and Business Administration (B.B.A.) catalogs ship out of the box, each with its own courses, prerequisites, and credit requirements, served from a real database.
-- **Drag-and-drop planning** — move courses between an "unscheduled" pool and semesters; drop targets highlight live, and courses placed before their prerequisites are visually flagged.
+- **9 degree programs** — Computer Science, Business Administration, Psychology, Biology, Mechanical Engineering, Nursing, English, Mathematics, and Communication Studies, each with its own realistic course catalog, prerequisites, and credit requirements, served from a real database.
+- **"What year are you?" selector** — pick Freshman/Sophomore/Junior/Senior and every course recommended for earlier years is automatically marked completed, with an optional toggle to include summer terms in the plan.
+- **Course Map** — a visual flowchart of the entire program: every course as a node positioned by its recommended year/term, connected by arrows to its prerequisites, color-coded by requirement category, with click-to-trace prerequisite chains.
+- **Drag-and-drop planning** — move courses between an "unscheduled" pool and semesters (labeled "Year 1 · Fall", "Year 1 · Spring", etc.); drop targets highlight live, and courses placed before their prerequisites are visually flagged.
 - **Automatic plan generation** — a topological-sort scheduler batches courses into semesters respecting prerequisite order and a configurable max-courses-per-semester limit.
 - **Conflict detection** — flags same-day, overlapping-time course pairs within a semester (online/async courses are exempt).
 - **GPA + requirement tracking** — assign letter grades to completed courses and see a live cumulative GPA plus progress bars per requirement category (Major / Math & Science / Gen Ed / Elective).
@@ -34,7 +36,9 @@ backend/    Express REST API backed by SQLite (programs, courses, prerequisites,
 
 The catalog (programs, courses, prerequisites) is normalized across three tables so prerequisite graphs and requirement categories are queryable. A saved plan's semester layout is stored as a JSON blob, since its shape (number of semesters, courses per semester) is inherently variable — normalizing that further would add complexity without benefit at this scale.
 
-Scheduling and conflict-detection logic (topological sort, time-overlap checks, prerequisite-blocking checks) lives in pure functions under `frontend/src/utils/`, decoupled from React, so it's independently testable.
+Every course also carries a `year_level` (1-4) and `term` (Fall/Spring/Summer) — its recommended position in a standard 4-year plan. That metadata drives three things: the semester labels on the planner ("Year 2 · Spring" instead of "Semester 3"), the Course Map's column layout, and the "what year are you" selector's auto-complete logic.
+
+Scheduling and conflict-detection logic (topological sort, time-overlap checks, prerequisite-blocking checks, year/term labeling) lives in pure functions under `frontend/src/utils/`, decoupled from React, so it's independently testable.
 
 ## Getting started
 
@@ -83,8 +87,10 @@ backend/
 frontend/
   src/
     api.js           Fetch client for the backend
-    components/       ProgramSelector, Sidebar, PlannerBoard, GpaPanel, SavedPlans, CourseDetails
-    utils/            scheduler.js (scheduling/conflicts), gpa.js (GPA/category math), deptColor.js
+    components/       ProgramSelector, YearSelector, Sidebar, PlannerBoard, CourseMap,
+                       GpaPanel, SavedPlans, CourseDetails
+    utils/            scheduler.js (scheduling/conflicts/year-term labeling),
+                       gpa.js (GPA/category math), deptColor.js
     App.jsx           Top-level state and layout
 ```
 

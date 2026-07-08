@@ -115,6 +115,7 @@ export default function PlannerBoard({
   onDragEnd,
   onAddSemester,
   onRemoveSemester,
+  semesterLabel,
 }) {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -132,7 +133,7 @@ export default function PlannerBoard({
           <Column
             key={i}
             droppableId={`sem-${i}`}
-            title={`Semester ${i + 1}`}
+            title={semesterLabel ? semesterLabel(i) : `Semester ${i + 1}`}
             courses={sem}
             catalog={catalog}
             conflictSet={conflicts?.[i]}

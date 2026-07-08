@@ -81,6 +81,37 @@ export function computeBlocked(unscheduled, semesters, catalog, completedCourses
 }
 
 /* =======================
+   YEAR / TERM LABELING
+======================= */
+
+export const YEAR_LEVELS = [
+  { level: 1, label: "Freshman" },
+  { level: 2, label: "Sophomore" },
+  { level: 3, label: "Junior" },
+  { level: 4, label: "Senior" },
+];
+
+/** Course codes whose recommended year is earlier than `year` (1-4). */
+export function coursesBeforeYear(catalog, year) {
+  return Object.keys(catalog).filter((code) => (catalog[code].yearLevel || 1) < year);
+}
+
+/**
+ * Human label for the semester at `index` (0-based) on the planner board,
+ * offset by the student's starting year so a plan that begins mid-degree
+ * (e.g. a transfer or a Junior who's already completed years 1-2) is
+ * labeled correctly instead of always starting at "Year 1".
+ */
+export function termLabel(index, { startYear = 1, includeSummer = false } = {}) {
+  const termNames = includeSummer ? ["Fall", "Spring", "Summer"] : ["Fall", "Spring"];
+  const termsPerYear = termNames.length;
+  const absoluteIndex = index + (startYear - 1) * termsPerYear;
+  const year = Math.floor(absoluteIndex / termsPerYear) + 1;
+  const term = termNames[absoluteIndex % termsPerYear];
+  return `Year ${year} · ${term}`;
+}
+
+/* =======================
    HELPERS
 ======================= */
 

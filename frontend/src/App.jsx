@@ -6,6 +6,8 @@ import CourseDetails from "./components/CourseDetails";
 import ProgramSelector from "./components/ProgramSelector";
 import GpaPanel from "./components/GpaPanel";
 import SavedPlans from "./components/SavedPlans";
+import YearSelector from "./components/YearSelector";
+import CourseMap from "./components/CourseMap";
 import api from "./api";
 import {
   detectConflicts,
@@ -13,6 +15,8 @@ import {
   sumCredits,
   totalCatalogCredits,
   computeBlocked,
+  coursesBeforeYear,
+  termLabel,
 } from "./utils/scheduler";
 
 export default function App() {
@@ -31,6 +35,9 @@ export default function App() {
   const [board, setBoard] = useState({ unscheduled: [], semesters: [] });
   const [conflicts, setConflicts] = useState({});
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [startYear, setStartYear] = useState(1);
+  const [includeSummer, setIncludeSummer] = useState(false);
+  const [view, setView] = useState("planner");
 
   // ----- saved plans -----
   const [savedPlans, setSavedPlans] = useState([]);
@@ -84,6 +91,8 @@ export default function App() {
         setSelectedCourse(null);
         setSavedPlans(plans);
         setActivePlanId(null);
+        setStartYear(1);
+        setIncludeSummer(false);
       })
       .catch((err) => setApiError(err.message))
       .finally(() => setCatalogLoading(false));
@@ -152,6 +161,18 @@ export default function App() {
     setBoard((b) => ({
       unscheduled: b.unscheduled.filter((c) => c !== code),
       semesters: b.semesters.map((s) => s.filter((c) => c !== code)),
+    }));
+  };
+
+  const handleStartYearChange = (year) => {
+    setStartYear(year);
+    const toComplete = coursesBeforeYear(masterCatalog, year).filter((c) => !completedCourses.includes(c));
+    if (toComplete.length === 0) return;
+
+    setCompletedCourses((prev) => [...prev, ...toComplete]);
+    setBoard((b) => ({
+      unscheduled: b.unscheduled.filter((c) => !toComplete.includes(c)),
+      semesters: b.semesters.map((s) => s.filter((c) => !toComplete.includes(c))),
     }));
   };
 
@@ -276,6 +297,13 @@ export default function App() {
         <div className="sidebar-col">
           <ProgramSelector programs={programs} selectedProgramId={selectedProgramId} onSelect={setSelectedProgramId} />
 
+          <YearSelector
+            startYear={startYear}
+            onChangeStartYear={handleStartYearChange}
+            includeSummer={includeSummer}
+            onToggleSummer={setIncludeSummer}
+          />
+
           <Sidebar
             courses={courses}
             setCourses={setCourses}
@@ -298,28 +326,47 @@ export default function App() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "12px", marginBottom: "12px", alignItems: "center" }}>
-            <button className="btn btn-success" onClick={handleGenerate} disabled={catalogLoading}>
-              ⚡ Generate Plan
+          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+            <button
+              className="btn"
+              style={{ background: view === "planner" ? "#2563eb" : "#f1f5f9", color: view === "planner" ? "white" : "#334155" }}
+              onClick={() => setView("planner")}
+            >
+              🗂 My Plan
             </button>
-            <label style={{ fontSize: "13px", color: "#475569" }}>
-              Max courses / semester{" "}
-              <input
-                type="number"
-                min="1"
-                max="8"
-                value={maxPerSemester}
-                onChange={(e) => setMaxPerSemester(Number(e.target.value))}
-                style={{ width: "60px" }}
-              />
-            </label>
+            <button
+              className="btn"
+              style={{ background: view === "map" ? "#2563eb" : "#f1f5f9", color: view === "map" ? "white" : "#334155" }}
+              onClick={() => setView("map")}
+            >
+              🗺 Course Map
+            </button>
           </div>
+
+          {view === "planner" && (
+            <div style={{ display: "flex", gap: "12px", marginBottom: "12px", alignItems: "center" }}>
+              <button className="btn btn-success" onClick={handleGenerate} disabled={catalogLoading}>
+                ⚡ Generate Plan
+              </button>
+              <label style={{ fontSize: "13px", color: "#475569" }}>
+                Max courses / semester{" "}
+                <input
+                  type="number"
+                  min="1"
+                  max="8"
+                  value={maxPerSemester}
+                  onChange={(e) => setMaxPerSemester(Number(e.target.value))}
+                  style={{ width: "60px" }}
+                />
+              </label>
+            </div>
+          )}
 
           {catalogLoading && (
             <div className="card">Loading catalog…</div>
           )}
 
-          {!catalogLoading && (
+          {!catalogLoading && view === "planner" && (
             <div ref={boardRef}>
               <PlannerBoard
                 unscheduled={board.unscheduled}
@@ -330,9 +377,12 @@ export default function App() {
                 onDragEnd={handleDragEnd}
                 onAddSemester={handleAddSemester}
                 onRemoveSemester={handleRemoveSemester}
+                semesterLabel={(i) => termLabel(i, { startYear, includeSummer })}
               />
             </div>
           )}
+
+          {!catalogLoading && view === "map" && <CourseMap catalog={masterCatalog} />}
         </div>
 
         <div className="details-panel">

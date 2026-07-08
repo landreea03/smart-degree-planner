@@ -29,6 +29,8 @@ export default function Sidebar({
     time: "",
     mode: "In-Person",
     category: "Elective",
+    yearLevel: 1,
+    term: "Fall",
     prereq: []
   };
 
@@ -74,7 +76,9 @@ export default function Sidebar({
       days: draft.days || "",
       time: draft.time || "",
       mode: draft.mode || "In-Person",
-      category: draft.category || "Elective"
+      category: draft.category || "Elective",
+      yearLevel: Number(draft.yearLevel) || 1,
+      term: draft.term || "Fall"
     };
 
     setCourses(copy);
@@ -213,6 +217,29 @@ export default function Sidebar({
         <option>Gen Ed</option>
         <option>Elective</option>
       </select>
+
+      <div style={{ display: "flex", gap: "8px" }}>
+        <select
+          className="input"
+          value={draft.yearLevel || 1}
+          onChange={e => setDraft(d => ({ ...d, yearLevel: Number(e.target.value) }))}
+        >
+          <option value={1}>Freshman year</option>
+          <option value={2}>Sophomore year</option>
+          <option value={3}>Junior year</option>
+          <option value={4}>Senior year</option>
+        </select>
+
+        <select
+          className="input"
+          value={draft.term || "Fall"}
+          onChange={e => setDraft(d => ({ ...d, term: e.target.value }))}
+        >
+          <option>Fall</option>
+          <option>Spring</option>
+          <option>Summer</option>
+        </select>
+      </div>
 
       <textarea
         className="input"
