@@ -83,6 +83,7 @@ export default function App() {
     : 0;
   const remainingCredits = totalRequiredCredits - completedCredits;
   const blocked = computeBlocked(board.unscheduled, board.semesters, courses, completedCourses);
+  const inPlanCodes = new Set([...board.unscheduled, ...board.semesters.flat()]);
 
   // ----- initial load: programs + minors -----
   useEffect(() => {
@@ -200,16 +201,44 @@ export default function App() {
     setActivePlanId(null);
   };
 
-  const toggleCompleted = (code) => {
-    setCompletedCourses((prev) => {
-      const next = prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code];
-      return next;
+  // Adds `code` to the unscheduled pool if it isn't already placed somewhere
+  // on the board (avoids ever putting the same code in two columns, which
+  // would break drag-and-drop's uniqueness assumption).
+  const addCourseToBoard = (code) => {
+    setBoard((b) => {
+      const alreadyPlaced = b.unscheduled.includes(code) || b.semesters.some((s) => s.includes(code));
+      if (alreadyPlaced) return b;
+      return { ...b, unscheduled: [...b.unscheduled, code] };
     });
-    // Pull the course off the board either way — completed courses don't need scheduling.
-    setBoard((b) => ({
-      unscheduled: b.unscheduled.filter((c) => c !== code),
-      semesters: b.semesters.map((s) => s.filter((c) => c !== code)),
-    }));
+  };
+
+  // Explicit "add to plan" action (Sidebar's + button, and right after a
+  // course is created/edited): puts the course on the board and selects it
+  // so there's visible feedback that something happened. Callers are
+  // trusted to pass a real code — this deliberately doesn't gate on the
+  // `courses` closure, since saveCourse() calls this in the same tick as
+  // setCourses(), before that state update has actually re-rendered.
+  const handleAddToPlan = (code) => {
+    if (!code) return;
+    addCourseToBoard(code);
+    setSelectedCourse(code);
+  };
+
+  const toggleCompleted = (code) => {
+    const isCompleting = !completedCourses.includes(code);
+    setCompletedCourses((prev) => (isCompleting ? [...prev, code] : prev.filter((c) => c !== code)));
+
+    if (isCompleting) {
+      // Completed courses don't need scheduling — pull them off the board.
+      setBoard((b) => ({
+        unscheduled: b.unscheduled.filter((c) => c !== code),
+        semesters: b.semesters.map((s) => s.filter((c) => c !== code)),
+      }));
+    } else {
+      // Un-completing: put it back in the unscheduled pool so it can be
+      // scheduled again, instead of leaving it in limbo off the board.
+      addCourseToBoard(code);
+    }
   };
 
   const handleStartYearChange = (year) => {
@@ -411,9 +440,11 @@ export default function App() {
               setCourses={setCourses}
               masterCatalog={masterCatalog}
               completedCourses={completedCourses}
-              setCompletedCourses={toggleCompleted}
+              onToggleCompleted={toggleCompleted}
               selectedCourse={selectedCourse}
               setSelectedCourse={setSelectedCourse}
+              inPlanCodes={inPlanCodes}
+              onAddToPlan={handleAddToPlan}
             />
           </div>
 
@@ -472,6 +503,7 @@ export default function App() {
                   onDragEnd={handleDragEnd}
                   onAddSemester={handleAddSemester}
                   onRemoveSemester={handleRemoveSemester}
+                  onSelectCourse={setSelectedCourse}
                   semesterLabel={(i) => termLabel(i, { startYear, includeSummer })}
                 />
               </div>

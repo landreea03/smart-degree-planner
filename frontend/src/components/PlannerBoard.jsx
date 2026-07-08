@@ -1,7 +1,7 @@
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { categoryColor } from "../utils/categoryColor";
 
-function CourseChip({ code, index, catalog, isConflict, isBlocked, wrap }) {
+function CourseChip({ code, index, catalog, isConflict, isBlocked, wrap, onSelect }) {
   const course = catalog[code];
   const color = categoryColor(course?.category);
 
@@ -13,6 +13,7 @@ function CourseChip({ code, index, catalog, isConflict, isBlocked, wrap }) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className="course-chip"
+          onClick={() => onSelect?.(code)}
           style={{
             "--chip-accent": isConflict ? "var(--danger)" : isBlocked ? "var(--warning)" : color.accent,
             background: isConflict ? "var(--danger-soft)" : "var(--surface)",
@@ -23,7 +24,7 @@ function CourseChip({ code, index, catalog, isConflict, isBlocked, wrap }) {
             marginBottom: wrap ? 0 : undefined,
             ...provided.draggableProps.style,
           }}
-          title={course ? `${course.name} (${course.credits} cr)` : code}
+          title={course ? `${course.name} (${course.credits} cr) — click for details, drag to move` : code}
         >
           <div style={{ fontSize: "13px" }}>{code}</div>
           {course && <div className="muted" style={{ fontSize: "11px", fontWeight: 500 }}>{course.credits} cr</div>}
@@ -34,7 +35,7 @@ function CourseChip({ code, index, catalog, isConflict, isBlocked, wrap }) {
   );
 }
 
-function Column({ droppableId, title, courses, catalog, conflictSet, blockedSet, onRemove, headerRight, wrap }) {
+function Column({ droppableId, title, courses, catalog, conflictSet, blockedSet, onRemove, headerRight, wrap, onSelectCourse }) {
   return (
     <div className="card semester-card">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
@@ -98,6 +99,7 @@ function Column({ droppableId, title, courses, catalog, conflictSet, blockedSet,
                 isConflict={conflictSet?.has(code)}
                 isBlocked={blockedSet?.has(code)}
                 wrap={wrap}
+                onSelect={onSelectCourse}
               />
             ))}
             {provided.placeholder}
@@ -117,6 +119,7 @@ export default function PlannerBoard({
   onDragEnd,
   onAddSemester,
   onRemoveSemester,
+  onSelectCourse,
   semesterLabel,
 }) {
   return (
@@ -127,6 +130,7 @@ export default function PlannerBoard({
         courses={unscheduled}
         catalog={catalog}
         blockedSet={blocked?.unscheduled}
+        onSelectCourse={onSelectCourse}
         wrap
       />
 
@@ -141,6 +145,7 @@ export default function PlannerBoard({
             conflictSet={conflicts?.[i]}
             blockedSet={blocked?.[`sem-${i}`]}
             onRemove={sem.length === 0 ? () => onRemoveSemester(i) : undefined}
+            onSelectCourse={onSelectCourse}
           />
         ))}
 
