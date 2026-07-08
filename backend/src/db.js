@@ -86,6 +86,14 @@ export function initSchema() {
       prereq_code TEXT NOT NULL,
       PRIMARY KEY (course_id, prereq_code)
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      name TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   migrate();
@@ -99,13 +107,20 @@ export function initSchema() {
  * to be backfilled here explicitly or every existing DB stays stale forever.
  */
 function migrate() {
-  const existing = new Set(db.prepare("PRAGMA table_info(courses)").all().map((c) => c.name));
+  const courseCols = new Set(db.prepare("PRAGMA table_info(courses)").all().map((c) => c.name));
 
-  if (!existing.has("year_level")) {
+  if (!courseCols.has("year_level")) {
     db.exec("ALTER TABLE courses ADD COLUMN year_level INTEGER NOT NULL DEFAULT 1");
   }
-  if (!existing.has("term")) {
+  if (!courseCols.has("term")) {
     db.exec("ALTER TABLE courses ADD COLUMN term TEXT NOT NULL DEFAULT 'Fall'");
+  }
+
+  const planCols = new Set(db.prepare("PRAGMA table_info(plans)").all().map((c) => c.name));
+  if (!planCols.has("user_id")) {
+    // Nullable: existing plans predate accounts and have no owner. They're
+    // simply excluded once routes filter by user_id — acceptable for a demo.
+    db.exec("ALTER TABLE plans ADD COLUMN user_id INTEGER REFERENCES users(id)");
   }
 }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function SavedPlans({ plans, activePlanId, onSave, onLoad, onDelete, saving }) {
+export default function SavedPlans({ plans, activePlanId, onSave, onLoad, onDelete, saving, currentUser }) {
   const [name, setName] = useState("");
 
   const handleSave = () => {
@@ -8,6 +8,17 @@ export default function SavedPlans({ plans, activePlanId, onSave, onLoad, onDele
     onSave(name.trim());
     setName("");
   };
+
+  if (!currentUser) {
+    return (
+      <div className="card" style={{ marginBottom: "12px" }}>
+        <div style={{ fontWeight: 700, marginBottom: "8px" }}>💾 Saved Plans</div>
+        <div className="muted" style={{ fontSize: "13px" }}>
+          Sign in to save plans and pick up where you left off on any device.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card" style={{ marginBottom: "12px" }}>

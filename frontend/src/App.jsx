@@ -10,6 +10,7 @@ import SavedPlans from "./components/SavedPlans";
 import YearSelector from "./components/YearSelector";
 import CourseMap from "./components/CourseMap";
 import ThemeToggle from "./components/ThemeToggle";
+import AuthPanel from "./components/AuthPanel";
 import api from "./api";
 import {
   detectConflicts,
@@ -64,6 +65,10 @@ export default function App() {
   const [activePlanId, setActivePlanId] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  // ----- auth -----
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authBusy, setAuthBusy] = useState(false);
+
   const boardRef = useRef(null);
 
   const totalRequiredCredits = totalCatalogCredits(masterCatalog);
@@ -92,9 +97,12 @@ export default function App() {
     api.getMinors().then(setMinors).catch(() => {
       // Minors are a nice-to-have; don't block the app if this fails.
     });
+
+    // Restore an existing login session (if the auth cookie is still valid).
+    api.me().then(setCurrentUser).catch(() => setCurrentUser(null));
   }, []);
 
-  // ----- load catalog + saved plans whenever the program or minor changes -----
+  // ----- load catalog whenever the program or minor changes -----
   useEffect(() => {
     if (!selectedProgramId) return;
     // Loading flag for the fetch this effect kicks off below — intentionally
@@ -107,9 +115,8 @@ export default function App() {
     Promise.all([
       api.getProgramCatalog(selectedProgramId),
       selectedMinorId ? api.getMinorCatalog(selectedMinorId) : Promise.resolve({ catalog: {} }),
-      api.listPlans(selectedProgramId),
     ])
-      .then(([{ catalog: programCatalog }, { catalog: minorCatalog }, plans]) => {
+      .then(([{ catalog: programCatalog }, { catalog: minorCatalog }]) => {
         const catalog = mergeCatalogs(programCatalog, minorCatalog);
         setMasterCatalog(catalog);
         setCourses(structuredClone(catalog));
@@ -118,7 +125,6 @@ export default function App() {
         setBoard({ unscheduled: Object.keys(catalog), semesters: [] });
         setConflicts({});
         setSelectedCourse(null);
-        setSavedPlans(plans);
         setActivePlanId(null);
         setStartYear(1);
         setIncludeSummer(false);
@@ -126,6 +132,19 @@ export default function App() {
       .catch((err) => setApiError(err.message))
       .finally(() => setCatalogLoading(false));
   }, [selectedProgramId, selectedMinorId]);
+
+  // ----- keep saved plans in sync with the signed-in user + selected program -----
+  useEffect(() => {
+    if (!selectedProgramId || !currentUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSavedPlans([]);
+      return;
+    }
+    api
+      .listPlans(selectedProgramId)
+      .then(setSavedPlans)
+      .catch(() => setSavedPlans([]));
+  }, [selectedProgramId, currentUser]);
 
   const recomputeConflicts = useCallback(
     (semesters) => {
@@ -289,6 +308,39 @@ export default function App() {
     }
   };
 
+  const handleLogin = async (email, password) => {
+    setAuthBusy(true);
+    try {
+      const user = await api.login(email, password);
+      setCurrentUser(user);
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleSignup = async (email, password, name) => {
+    setAuthBusy(true);
+    try {
+      const user = await api.signup(email, password, name);
+      setCurrentUser(user);
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setAuthBusy(true);
+    try {
+      await api.logout();
+    } catch {
+      // Clear local state regardless — the cookie may already be gone.
+    } finally {
+      setCurrentUser(null);
+      setActivePlanId(null);
+      setAuthBusy(false);
+    }
+  };
+
   const handleExportPdf = async () => {
     if (!boardRef.current) return;
     const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
@@ -321,6 +373,13 @@ export default function App() {
               ⬇ Export PDF
             </button>
             <ThemeToggle theme={theme} onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
+            <AuthPanel
+              user={currentUser}
+              onLogin={handleLogin}
+              onSignup={handleSignup}
+              onLogout={handleLogout}
+              busy={authBusy}
+            />
           </div>
         </div>
       </div>
@@ -431,6 +490,7 @@ export default function App() {
               onLoad={handleLoadPlan}
               onDelete={handleDeletePlan}
               saving={saving}
+              currentUser={currentUser}
             />
 
             {activePlanId && (
