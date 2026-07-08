@@ -119,6 +119,20 @@ export function sumCredits(courseList, catalog) {
   return courseList.reduce((sum, c) => sum + (catalog[c]?.credits || 0), 0);
 }
 
+/**
+ * Merges a minor's catalog into a major/program catalog. Courses already
+ * required by the major take precedence (a shared gen-ed requirement can
+ * satisfy both), so the minor only contributes codes the major doesn't
+ * already have.
+ */
+export function mergeCatalogs(programCatalog, minorCatalog) {
+  const merged = { ...programCatalog };
+  Object.entries(minorCatalog || {}).forEach(([code, course]) => {
+    if (!merged[code]) merged[code] = course;
+  });
+  return merged;
+}
+
 export function totalCatalogCredits(catalog) {
   return Object.values(catalog).reduce((sum, c) => sum + (c.credits || 0), 0);
 }

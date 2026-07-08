@@ -1,9 +1,9 @@
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { deptColor } from "../utils/deptColor";
+import { categoryColor } from "../utils/categoryColor";
 
 function CourseChip({ code, index, catalog, isConflict, isBlocked, wrap }) {
   const course = catalog[code];
-  const color = deptColor(code);
+  const color = categoryColor(course?.category);
 
   return (
     <Draggable draggableId={code} index={index}>
@@ -14,19 +14,20 @@ function CourseChip({ code, index, catalog, isConflict, isBlocked, wrap }) {
           {...provided.dragHandleProps}
           className="course-chip"
           style={{
-            background: isConflict ? "#fee2e2" : color.bg,
-            border: isConflict ? "2px solid #dc2626" : isBlocked ? "2px dashed #f59e0b" : `1px solid ${color.border}`,
-            boxShadow: snapshot.isDragging ? "0 8px 20px rgba(0,0,0,0.18)" : undefined,
+            "--chip-accent": isConflict ? "var(--danger)" : isBlocked ? "var(--warning)" : color.accent,
+            background: isConflict ? "var(--danger-soft)" : "var(--surface)",
+            borderLeftStyle: isBlocked ? "dashed" : "solid",
+            boxShadow: snapshot.isDragging ? "var(--shadow-lg)" : undefined,
             cursor: "grab",
-            width: wrap ? "150px" : "auto",
+            width: wrap ? "156px" : "auto",
             marginBottom: wrap ? 0 : undefined,
             ...provided.draggableProps.style,
           }}
           title={course ? `${course.name} (${course.credits} cr)` : code}
         >
-          <div>{code}</div>
-          {course && <div style={{ fontSize: "11px", fontWeight: 500, opacity: 0.75 }}>{course.credits} cr</div>}
-          {isBlocked && <div style={{ fontSize: "10px", fontWeight: 700, color: "#b45309" }}>⚠ prereq not yet met</div>}
+          <div style={{ fontSize: "13px" }}>{code}</div>
+          {course && <div className="muted" style={{ fontSize: "11px", fontWeight: 500 }}>{course.credits} cr</div>}
+          {isBlocked && <div style={{ fontSize: "10px", fontWeight: 700, color: "var(--warning)", marginTop: "2px" }}>⚠ prereq not yet met</div>}
         </div>
       )}
     </Draggable>
@@ -37,12 +38,12 @@ function Column({ droppableId, title, courses, catalog, conflictSet, blockedSet,
   return (
     <div className="card semester-card">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-        <div style={{ fontWeight: 700 }}>{title}</div>
+        <div style={{ fontWeight: 700, fontSize: "13.5px" }}>{title}</div>
         {headerRight}
         {onRemove && (
           <button
-            className="btn"
-            style={{ padding: "2px 8px", fontSize: "12px", background: "#f1f5f9" }}
+            className="btn btn-icon"
+            style={{ width: "24px", height: "24px", fontSize: "11px" }}
             onClick={onRemove}
             title="Remove empty semester"
           >
@@ -54,12 +55,13 @@ function Column({ droppableId, title, courses, catalog, conflictSet, blockedSet,
       {conflictSet?.size > 0 && (
         <div
           style={{
-            background: "#fee2e2",
-            color: "#991b1b",
+            background: "var(--danger-soft)",
+            color: "var(--danger)",
             padding: "8px",
-            borderRadius: "8px",
+            borderRadius: "var(--radius-sm)",
             fontSize: "12px",
             marginBottom: "8px",
+            fontWeight: 600,
           }}
         >
           ⚠️ Time conflict detected in this semester
@@ -73,8 +75,8 @@ function Column({ droppableId, title, courses, catalog, conflictSet, blockedSet,
             {...provided.droppableProps}
             style={{
               minHeight: "56px",
-              borderRadius: "10px",
-              background: snapshot.isDraggingOver ? "rgba(37,99,235,0.08)" : "transparent",
+              borderRadius: "var(--radius-sm)",
+              background: snapshot.isDraggingOver ? "var(--accent-soft)" : "transparent",
               transition: "background 0.15s",
               padding: "2px",
               display: wrap ? "flex" : "block",
@@ -83,7 +85,7 @@ function Column({ droppableId, title, courses, catalog, conflictSet, blockedSet,
             }}
           >
             {courses.length === 0 && (
-              <div style={{ fontSize: "12px", color: "#94a3b8", padding: "8px", textAlign: "center" }}>
+              <div className="muted" style={{ fontSize: "12px", padding: "8px", textAlign: "center" }}>
                 Drop courses here
               </div>
             )}
@@ -146,9 +148,9 @@ export default function PlannerBoard({
           className="btn"
           style={{
             minHeight: "120px",
-            border: "2px dashed #cbd5e1",
+            border: "1.5px dashed var(--border-strong)",
             background: "transparent",
-            color: "#64748b",
+            color: "var(--text-secondary)",
             fontWeight: 700,
           }}
           onClick={onAddSemester}

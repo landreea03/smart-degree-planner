@@ -58,6 +58,34 @@ export function initSchema() {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS minors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS minor_courses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      minor_id INTEGER NOT NULL REFERENCES minors(id) ON DELETE CASCADE,
+      code TEXT NOT NULL,
+      name TEXT NOT NULL,
+      credits INTEGER NOT NULL DEFAULT 3,
+      description TEXT DEFAULT '',
+      days TEXT DEFAULT '',
+      time TEXT DEFAULT '',
+      mode TEXT DEFAULT 'In-Person',
+      year_level INTEGER NOT NULL DEFAULT 1,
+      term TEXT NOT NULL DEFAULT 'Fall',
+      UNIQUE(minor_id, code)
+    );
+
+    CREATE TABLE IF NOT EXISTS minor_course_prereqs (
+      course_id INTEGER NOT NULL REFERENCES minor_courses(id) ON DELETE CASCADE,
+      prereq_code TEXT NOT NULL,
+      PRIMARY KEY (course_id, prereq_code)
+    );
   `);
 
   migrate();

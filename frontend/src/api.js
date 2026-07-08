@@ -25,6 +25,9 @@ export const api = {
   getPrograms: () => request("/api/programs"),
   getProgramCatalog: (programId) => request(`/api/programs/${programId}/courses`),
 
+  getMinors: () => request("/api/minors"),
+  getMinorCatalog: (minorId) => request(`/api/minors/${minorId}/courses`),
+
   listPlans: (programId) => request(`/api/plans?programId=${programId}`),
   getPlan: (id) => request(`/api/plans/${id}`),
   createPlan: (plan) => request("/api/plans", { method: "POST", body: JSON.stringify(plan) }),

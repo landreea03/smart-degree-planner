@@ -27,7 +27,7 @@ export default function SavedPlans({ plans, activePlanId, onSave, onLoad, onDele
       </div>
 
       {plans.length === 0 && (
-        <div style={{ fontSize: "13px", color: "#64748b" }}>No saved plans for this program yet.</div>
+        <div className="muted" style={{ fontSize: "13px" }}>No saved plans for this program yet.</div>
       )}
 
       {plans.map((p) => (
@@ -40,19 +40,19 @@ export default function SavedPlans({ plans, activePlanId, onSave, onLoad, onDele
             padding: "8px 10px",
             borderRadius: "10px",
             marginBottom: "6px",
-            background: p.id === activePlanId ? "rgba(37,99,235,0.08)" : "#f8fafc",
-            border: p.id === activePlanId ? "1px solid rgba(37,99,235,0.3)" : "1px solid transparent",
+            background: p.id === activePlanId ? "var(--accent-soft)" : "var(--surface-2)",
+            border: p.id === activePlanId ? "1px solid var(--accent-soft-strong)" : "1px solid transparent",
           }}
         >
           <div style={{ cursor: "pointer", flex: 1 }} onClick={() => onLoad(p.id)}>
             <div style={{ fontWeight: 600, fontSize: "13px" }}>{p.name}</div>
-            <div style={{ fontSize: "11px", color: "#94a3b8" }}>
+            <div style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
               updated {new Date(p.updatedAt).toLocaleString()}
             </div>
           </div>
           <button
-            className="btn"
-            style={{ background: "#fee2e2", padding: "6px 10px", fontSize: "12px" }}
+            className="btn btn-danger-soft"
+            style={{ padding: "6px 10px", fontSize: "12px" }}
             onClick={() => onDelete(p.id)}
           >
             🗑

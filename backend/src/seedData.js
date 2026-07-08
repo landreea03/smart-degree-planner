@@ -102,7 +102,7 @@ export const PROGRAMS = [
       ENGL1302: { name: "Rhetoric II", credits: 3, category: "Gen Ed", description: "Advanced writing.", prereq: ["ENGL1301"], days: "TR", time: "12:30 - 13:45", mode: "Hybrid", year: 1, term: "Spring" },
       BIOL2401: { name: "Genetics", credits: 4, category: "Major", description: "Classical and molecular genetics.", prereq: ["BIOL1407"], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 2, term: "Fall" },
       CHEM2423: { name: "Organic Chemistry I", credits: 4, category: "Math & Science", description: "Structure and reactivity.", prereq: ["CHEM1412"], days: "TR", time: "11:00 - 12:15", mode: "In-Person", year: 2, term: "Fall" },
-      STAT2380: { name: "Biostatistics", credits: 3, category: "Math & Science", description: "Statistics for life sciences.", prereq: [], days: "MWF", time: "12:00 - 12:50", mode: "In-Person", year: 2, term: "Fall" },
+      STAT2381: { name: "Biostatistics", credits: 3, category: "Math & Science", description: "Statistics for life sciences.", prereq: [], days: "MWF", time: "12:00 - 12:50", mode: "In-Person", year: 2, term: "Fall" },
       BIOL2402: { name: "Microbiology", credits: 4, category: "Major", description: "Microbial life.", prereq: ["BIOL1407"], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 2, term: "Spring" },
       CHEM2424: { name: "Organic Chemistry II", credits: 4, category: "Math & Science", description: "Synthesis and mechanisms.", prereq: ["CHEM2423"], days: "TR", time: "11:00 - 12:15", mode: "In-Person", year: 2, term: "Spring" },
       HIST1301: { name: "World History I", credits: 3, category: "Gen Ed", description: "Survey to 1500.", prereq: [], days: "Online", time: "Asynchronous", mode: "Online", year: 2, term: "Spring" },
@@ -125,14 +125,14 @@ export const PROGRAMS = [
       ENGL1301: { name: "Rhetoric I", credits: 3, category: "Gen Ed", description: "Composition.", prereq: [], days: "Online", time: "Asynchronous", mode: "Online", year: 1, term: "Fall" },
       ME1301: { name: "Intro to Mechanical Engineering", credits: 2, category: "Major", description: "Design thinking and CAD basics.", prereq: [], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 1, term: "Fall" },
       MATH1452: { name: "Calculus II", credits: 4, category: "Math & Science", description: "Integrals.", prereq: ["MATH1451"], days: "MWF", time: "08:00 - 08:50", mode: "In-Person", year: 1, term: "Spring" },
-      PHYS1408: { name: "Physics I: Mechanics", credits: 4, category: "Math & Science", description: "Newtonian mechanics.", prereq: ["MATH1451"], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Spring" },
+      PHYS1408: { name: "Physics I", credits: 4, category: "Math & Science", description: "Newtonian mechanics.", prereq: ["MATH1451"], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Spring" },
       ENGL1302: { name: "Rhetoric II", credits: 3, category: "Gen Ed", description: "Advanced writing.", prereq: ["ENGL1301"], days: "TR", time: "12:30 - 13:45", mode: "Hybrid", year: 1, term: "Spring" },
       ME2301: { name: "Engineering Statics", credits: 3, category: "Major", description: "Forces in equilibrium.", prereq: ["PHYS1408", "MATH1452"], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 2, term: "Fall" },
-      MATH2450: { name: "Differential Equations", credits: 3, category: "Math & Science", description: "ODEs and applications.", prereq: ["MATH1452"], days: "MWF", time: "11:00 - 11:50", mode: "In-Person", year: 2, term: "Fall" },
-      PHYS2401: { name: "Physics II: Electricity & Magnetism", credits: 4, category: "Math & Science", description: "Circuits and fields.", prereq: ["PHYS1408", "MATH1452"], days: "MWF", time: "15:00 - 15:50", mode: "In-Person", year: 2, term: "Fall" },
+      MATH2452: { name: "Differential Equations", credits: 3, category: "Math & Science", description: "ODEs and applications.", prereq: ["MATH1452"], days: "MWF", time: "11:00 - 11:50", mode: "In-Person", year: 2, term: "Fall" },
+      PHYS2401: { name: "Physics II", credits: 4, category: "Math & Science", description: "Circuits and fields.", prereq: ["PHYS1408", "MATH1452"], days: "MWF", time: "15:00 - 15:50", mode: "In-Person", year: 2, term: "Fall" },
       ME2302: { name: "Engineering Dynamics", credits: 3, category: "Major", description: "Kinematics and kinetics.", prereq: ["ME2301"], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 2, term: "Spring" },
       ME2350: { name: "Thermodynamics I", credits: 3, category: "Major", description: "Energy and entropy.", prereq: ["PHYS1408", "MATH1452"], days: "MWF", time: "12:00 - 12:50", mode: "In-Person", year: 2, term: "Spring" },
-      STAT2380: { name: "Engineering Statistics", credits: 3, category: "Math & Science", description: "Statistics for engineers.", prereq: [], days: "MWF", time: "08:00 - 08:50", mode: "In-Person", year: 2, term: "Spring" },
+      STAT2382: { name: "Engineering Statistics", credits: 3, category: "Math & Science", description: "Statistics for engineers.", prereq: [], days: "MWF", time: "08:00 - 08:50", mode: "In-Person", year: 2, term: "Spring" },
       ME3301: { name: "Mechanics of Materials", credits: 3, category: "Major", description: "Stress and strain.", prereq: ["ME2301"], days: "TR", time: "13:00 - 14:15", mode: "In-Person", year: 3, term: "Fall" },
       ME3350: { name: "Fluid Mechanics", credits: 3, category: "Major", description: "Fluid statics and dynamics.", prereq: ["ME2350"], days: "MWF", time: "13:00 - 13:50", mode: "In-Person", year: 3, term: "Fall" },
       ME3360: { name: "Manufacturing Processes", credits: 3, category: "Major", description: "Machining and materials processing.", prereq: ["ME2301"], days: "TR", time: "11:00 - 12:15", mode: "In-Person", year: 3, term: "Spring" },
@@ -148,17 +148,17 @@ export const PROGRAMS = [
     degree_type: "B.S.N.",
     description: "Pre-licensure nursing curriculum from health assessment through a senior practicum.",
     courses: {
-      BIOL2401: { name: "Anatomy & Physiology I", credits: 4, category: "Math & Science", description: "Structure and function I.", prereq: [], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Fall" },
+      BIOL2410: { name: "Anatomy & Physiology I", credits: 4, category: "Math & Science", description: "Structure and function I.", prereq: [], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Fall" },
       CHEM1405: { name: "Intro to Chemistry", credits: 4, category: "Math & Science", description: "Chemistry for health sciences.", prereq: [], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 1, term: "Fall" },
       ENGL1301: { name: "Rhetoric I", credits: 3, category: "Gen Ed", description: "Composition.", prereq: [], days: "Online", time: "Asynchronous", mode: "Online", year: 1, term: "Fall" },
       NURS1301: { name: "Intro to the Nursing Profession", credits: 2, category: "Major", description: "Professional foundations.", prereq: [], days: "MWF", time: "11:00 - 11:50", mode: "In-Person", year: 1, term: "Fall" },
-      BIOL2402: { name: "Anatomy & Physiology II", credits: 4, category: "Math & Science", description: "Structure and function II.", prereq: ["BIOL2401"], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Spring" },
+      BIOL2411: { name: "Anatomy & Physiology II", credits: 4, category: "Math & Science", description: "Structure and function II.", prereq: ["BIOL2410"], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Spring" },
       PSYC1300: { name: "Intro to Psychology", credits: 3, category: "Gen Ed", description: "Survey of the field.", prereq: [], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 1, term: "Spring" },
       ENGL1302: { name: "Rhetoric II", credits: 3, category: "Gen Ed", description: "Advanced writing.", prereq: ["ENGL1301"], days: "TR", time: "12:30 - 13:45", mode: "Hybrid", year: 1, term: "Spring" },
-      BIOL2420: { name: "Microbiology", credits: 4, category: "Math & Science", description: "Microbial life and infection.", prereq: ["BIOL2401"], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 2, term: "Fall" },
-      STAT2380: { name: "Statistics for Health Sciences", credits: 3, category: "Math & Science", description: "Applied health statistics.", prereq: [], days: "MWF", time: "08:00 - 08:50", mode: "In-Person", year: 2, term: "Fall" },
-      NURS2301: { name: "Health Assessment", credits: 3, category: "Major", description: "Physical assessment skills.", prereq: ["NURS1301", "BIOL2402"], days: "TR", time: "11:00 - 12:15", mode: "In-Person", year: 2, term: "Fall" },
-      NURS2310: { name: "Pharmacology I", credits: 3, category: "Major", description: "Medication administration.", prereq: ["BIOL2402"], days: "MWF", time: "12:00 - 12:50", mode: "In-Person", year: 2, term: "Spring" },
+      BIOL2420: { name: "Microbiology", credits: 4, category: "Math & Science", description: "Microbial life and infection.", prereq: ["BIOL2410"], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 2, term: "Fall" },
+      STAT2383: { name: "Statistics for Health Sciences", credits: 3, category: "Math & Science", description: "Applied health statistics.", prereq: [], days: "MWF", time: "08:00 - 08:50", mode: "In-Person", year: 2, term: "Fall" },
+      NURS2301: { name: "Health Assessment", credits: 3, category: "Major", description: "Physical assessment skills.", prereq: ["NURS1301", "BIOL2411"], days: "TR", time: "11:00 - 12:15", mode: "In-Person", year: 2, term: "Fall" },
+      NURS2310: { name: "Pharmacology I", credits: 3, category: "Major", description: "Medication administration.", prereq: ["BIOL2411"], days: "MWF", time: "12:00 - 12:50", mode: "In-Person", year: 2, term: "Spring" },
       NURS2320: { name: "Fundamentals of Nursing Practice", credits: 4, category: "Major", description: "Core clinical skills.", prereq: ["NURS2301"], days: "TR", time: "13:00 - 15:00", mode: "In-Person", year: 2, term: "Spring" },
       PSYC2301: { name: "Developmental Psychology", credits: 3, category: "Gen Ed", description: "Lifespan development.", prereq: ["PSYC1300"], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 2, term: "Spring" },
       NURS3301: { name: "Adult Health Nursing I", credits: 5, category: "Major", description: "Care of the adult patient.", prereq: ["NURS2320", "NURS2310"], days: "TR", time: "09:00 - 11:30", mode: "In-Person", year: 3, term: "Fall" },
@@ -236,7 +236,7 @@ export const PROGRAMS = [
       COMM1301: { name: "Intro to Communication Studies", credits: 3, category: "Major", description: "Survey of the field.", prereq: [], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Fall" },
       COMM1310: { name: "Public Speaking", credits: 3, category: "Major", description: "Oral presentation skills.", prereq: [], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 1, term: "Fall" },
       ENGL1302: { name: "Rhetoric II", credits: 3, category: "Gen Ed", description: "Advanced writing.", prereq: ["ENGL1301"], days: "TR", time: "12:30 - 13:45", mode: "Hybrid", year: 1, term: "Spring" },
-      COMM2301: { name: "Interpersonal Communication", credits: 3, category: "Major", description: "One-on-one communication dynamics.", prereq: ["COMM1301"], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Spring" },
+      COMM2302: { name: "Interpersonal Communication", credits: 3, category: "Major", description: "One-on-one communication dynamics.", prereq: ["COMM1301"], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Spring" },
       SOCI1301: { name: "Intro to Sociology", credits: 3, category: "Gen Ed", description: "Social structures and behavior.", prereq: [], days: "Online", time: "Asynchronous", mode: "Online", year: 1, term: "Spring" },
       MATH1342: { name: "Elementary Statistics", credits: 3, category: "Math & Science", description: "Statistical reasoning.", prereq: [], days: "MWF", time: "08:00 - 08:50", mode: "In-Person", year: 1, term: "Spring" },
       COMM2310: { name: "Media Writing", credits: 3, category: "Major", description: "Writing for media platforms.", prereq: ["COMM1301"], days: "TR", time: "11:00 - 12:15", mode: "In-Person", year: 2, term: "Fall" },
@@ -255,6 +255,95 @@ export const PROGRAMS = [
   },
 ];
 
+/**
+ * Six general minors, open to any major. Every course here is
+ * self-contained: reused codes (e.g. CS1411, ENGL1301) are always ones with
+ * NO prerequisites in their canonical program definition, and any deeper
+ * prerequisite chain uses fresh minor-specific codes that only reference
+ * each other. That guarantees every minor's prerequisite graph resolves
+ * correctly no matter which major it's paired with.
+ */
+export const MINORS = [
+  {
+    code: "BUSN-MIN",
+    name: "Business Minor",
+    description: "Core business fundamentals: markets, management, and a capstone project.",
+    courses: {
+      BUS1301: { name: "Intro to Business", credits: 3, description: "Foundations of business.", prereq: [], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Fall" },
+      ACCT2301: { name: "Financial Accounting", credits: 3, description: "Financial statements and reporting.", prereq: [], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 1, term: "Spring" },
+      ECON2301: { name: "Microeconomics", credits: 3, description: "Markets and firm behavior.", prereq: [], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 1, term: "Spring" },
+      BUSN3310: { name: "Marketing Fundamentals", credits: 3, description: "Intro to marketing strategy.", prereq: ["BUS1301"], days: "MWF", time: "12:00 - 12:50", mode: "Hybrid", year: 2, term: "Fall" },
+      BUSN3320: { name: "Managing People & Teams", credits: 3, description: "Applied management basics.", prereq: ["BUS1301"], days: "TR", time: "14:30 - 15:45", mode: "In-Person", year: 2, term: "Spring" },
+      BUSN4390: { name: "Business Minor Capstone", credits: 3, description: "Applied business project.", prereq: ["BUSN3310", "BUSN3320"], days: "MWF", time: "13:00 - 13:50", mode: "In-Person", year: 3, term: "Fall" },
+    },
+  },
+  {
+    code: "CS-MIN",
+    name: "Computer Science Minor",
+    description: "Programming fundamentals through a self-contained software capstone.",
+    courses: {
+      CS1411: { name: "Programming I", credits: 4, description: "Intro to programming.", prereq: [], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Fall" },
+      CSMN2301: { name: "Programming II", credits: 4, description: "OOP and data structures.", prereq: ["CS1411"], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 1, term: "Spring" },
+      CSMN2310: { name: "Data Structures for Minors", credits: 3, description: "Trees, lists, graphs.", prereq: ["CSMN2301"], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 2, term: "Fall" },
+      CSMN3301: { name: "Web Development Fundamentals", credits: 3, description: "Building web applications.", prereq: ["CSMN2301"], days: "TR", time: "11:00 - 12:15", mode: "In-Person", year: 2, term: "Spring" },
+      CSMN3310: { name: "Databases Fundamentals", credits: 3, description: "SQL and data modeling.", prereq: ["CSMN2310"], days: "Online", time: "Asynchronous", mode: "Online", year: 3, term: "Fall" },
+      CSMN4390: { name: "Capstone: Software Project", credits: 3, description: "Team software project.", prereq: ["CSMN3301", "CSMN3310"], days: "MWF", time: "13:00 - 13:50", mode: "Hybrid", year: 3, term: "Spring" },
+    },
+  },
+  {
+    code: "PSYC-MIN",
+    name: "Psychology Minor",
+    description: "Foundational psychology through an applied capstone project.",
+    courses: {
+      PSYC1300: { name: "Intro to Psychology", credits: 3, description: "Survey of the field.", prereq: [], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Fall" },
+      MATH1342: { name: "Elementary Statistics", credits: 3, description: "Statistical reasoning.", prereq: [], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 1, term: "Spring" },
+      PSYCMN2301: { name: "Developmental Psychology", credits: 3, description: "Lifespan development.", prereq: ["PSYC1300"], days: "MWF", time: "10:00 - 10:50", mode: "In-Person", year: 2, term: "Fall" },
+      PSYCMN3301: { name: "Abnormal Psychology", credits: 3, description: "Psychopathology.", prereq: ["PSYCMN2301"], days: "MWF", time: "12:00 - 12:50", mode: "In-Person", year: 2, term: "Spring" },
+      PSYCMN3310: { name: "Social Psychology", credits: 3, description: "The individual in social context.", prereq: ["PSYCMN2301"], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 3, term: "Fall" },
+      PSYCMN4390: { name: "Applied Psychology Capstone", credits: 3, description: "Applied research project.", prereq: ["PSYCMN3301", "PSYCMN3310"], days: "TR", time: "13:00 - 14:15", mode: "In-Person", year: 3, term: "Spring" },
+    },
+  },
+  {
+    code: "DATA-MIN",
+    name: "Data Science Minor",
+    description: "Programming and statistics fundamentals applied to data analysis and machine learning.",
+    courses: {
+      CS1411: { name: "Programming I", credits: 4, description: "Intro to programming.", prereq: [], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Fall" },
+      MATH1342: { name: "Elementary Statistics", credits: 3, description: "Statistical reasoning.", prereq: [], days: "TR", time: "09:30 - 10:45", mode: "In-Person", year: 1, term: "Fall" },
+      DATA1301: { name: "Intro to Data Science", credits: 3, description: "The data science workflow.", prereq: [], days: "MWF", time: "11:00 - 11:50", mode: "In-Person", year: 1, term: "Spring" },
+      DATA2301: { name: "Data Wrangling & Visualization", credits: 3, description: "Cleaning and visualizing data.", prereq: ["DATA1301", "CS1411"], days: "TR", time: "11:00 - 12:15", mode: "In-Person", year: 2, term: "Fall" },
+      DATA3301: { name: "Intro to Machine Learning", credits: 3, description: "Core ML algorithms.", prereq: ["DATA2301", "MATH1342"], days: "TR", time: "13:00 - 14:15", mode: "In-Person", year: 2, term: "Spring" },
+      DATA4390: { name: "Data Science Capstone", credits: 3, description: "Applied data science project.", prereq: ["DATA3301"], days: "MWF", time: "14:00 - 14:50", mode: "In-Person", year: 3, term: "Fall" },
+    },
+  },
+  {
+    code: "WRIT-MIN",
+    name: "Writing Minor",
+    description: "Creative and professional writing from composition through a portfolio capstone.",
+    courses: {
+      ENGL1301: { name: "Rhetoric I", credits: 3, description: "Composition.", prereq: [], days: "Online", time: "Asynchronous", mode: "Online", year: 1, term: "Fall" },
+      COMM2301: { name: "Public Speaking", credits: 3, description: "Applied communication.", prereq: [], days: "TR", time: "10:00 - 11:15", mode: "In-Person", year: 1, term: "Spring" },
+      WRITMN2301: { name: "Intro to Creative Writing", credits: 3, description: "Fiction, poetry, and nonfiction basics.", prereq: ["ENGL1301"], days: "MWF", time: "11:00 - 11:50", mode: "In-Person", year: 2, term: "Fall" },
+      WRITMN3301: { name: "Journalism & Feature Writing", credits: 3, description: "Reporting and feature articles.", prereq: ["WRITMN2301"], days: "TR", time: "13:00 - 14:15", mode: "In-Person", year: 2, term: "Spring" },
+      WRITMN3310: { name: "Poetry & Prose Workshop", credits: 3, description: "Workshop-based writing practice.", prereq: ["WRITMN2301"], days: "MWF", time: "14:00 - 14:50", mode: "In-Person", year: 3, term: "Fall" },
+      WRITMN4390: { name: "Writing Portfolio Capstone", credits: 3, description: "Curated final portfolio.", prereq: ["WRITMN3301", "WRITMN3310"], days: "TR", time: "14:30 - 15:45", mode: "In-Person", year: 3, term: "Spring" },
+    },
+  },
+  {
+    code: "SPAN-MIN",
+    name: "Spanish Minor",
+    description: "Spanish language and culture from elementary through conversational fluency.",
+    courses: {
+      SPAN1301: { name: "Elementary Spanish I", credits: 4, description: "Beginning Spanish.", prereq: [], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Fall" },
+      SPAN1302: { name: "Elementary Spanish II", credits: 4, description: "Continued beginning Spanish.", prereq: ["SPAN1301"], days: "MWF", time: "09:00 - 09:50", mode: "In-Person", year: 1, term: "Spring" },
+      SPAN2301: { name: "Intermediate Spanish I", credits: 3, description: "Intermediate grammar and conversation.", prereq: ["SPAN1302"], days: "TR", time: "10:00 - 11:15", mode: "In-Person", year: 2, term: "Fall" },
+      SPAN2302: { name: "Intermediate Spanish II", credits: 3, description: "Continued intermediate Spanish.", prereq: ["SPAN2301"], days: "TR", time: "10:00 - 11:15", mode: "In-Person", year: 2, term: "Spring" },
+      SPAN3301: { name: "Spanish Conversation & Culture", credits: 3, description: "Applied conversational fluency.", prereq: ["SPAN2302"], days: "MWF", time: "12:00 - 12:50", mode: "In-Person", year: 3, term: "Fall" },
+      SPAN3390: { name: "Spanish Capstone Project", credits: 3, description: "Culminating language project.", prereq: ["SPAN3301"], days: "MWF", time: "13:00 - 13:50", mode: "In-Person", year: 3, term: "Spring" },
+    },
+  },
+];
+
 export function isEmpty() {
   const row = db.prepare("SELECT COUNT(*) AS n FROM programs").get();
   return row.n === 0;
@@ -268,7 +357,10 @@ export function seed({ force = false } = {}) {
   }
 
   transaction(() => {
-    db.exec("DELETE FROM course_prereqs; DELETE FROM courses; DELETE FROM plans; DELETE FROM programs;");
+    db.exec(`
+      DELETE FROM course_prereqs; DELETE FROM courses; DELETE FROM plans; DELETE FROM programs;
+      DELETE FROM minor_course_prereqs; DELETE FROM minor_courses; DELETE FROM minors;
+    `);
   });
 
   const insertProgram = db.prepare(
@@ -280,6 +372,17 @@ export function seed({ force = false } = {}) {
   );
   const insertPrereq = db.prepare(
     "INSERT INTO course_prereqs (course_id, prereq_code) VALUES (?, ?)"
+  );
+
+  const insertMinor = db.prepare(
+    "INSERT INTO minors (code, name, description) VALUES (@code, @name, @description)"
+  );
+  const insertMinorCourse = db.prepare(
+    `INSERT INTO minor_courses (minor_id, code, name, credits, description, days, time, mode, year_level, term)
+     VALUES (@minor_id, @code, @name, @credits, @description, @days, @time, @mode, @year_level, @term)`
+  );
+  const insertMinorPrereq = db.prepare(
+    "INSERT INTO minor_course_prereqs (course_id, prereq_code) VALUES (?, ?)"
   );
 
   const insertAll = () => transaction(() => {
@@ -316,10 +419,42 @@ export function seed({ force = false } = {}) {
         }
       }
     }
+
+    for (const minor of MINORS) {
+      const { lastInsertRowid: minorId } = insertMinor.run({
+        code: minor.code,
+        name: minor.name,
+        description: minor.description,
+      });
+
+      const codeToId = {};
+
+      for (const [code, c] of Object.entries(minor.courses)) {
+        const { lastInsertRowid: courseId } = insertMinorCourse.run({
+          minor_id: minorId,
+          code,
+          name: c.name,
+          credits: c.credits,
+          description: c.description,
+          days: c.days,
+          time: c.time,
+          mode: c.mode,
+          year_level: c.year,
+          term: c.term,
+        });
+        codeToId[code] = courseId;
+      }
+
+      for (const [code, c] of Object.entries(minor.courses)) {
+        for (const prereqCode of c.prereq) {
+          insertMinorPrereq.run(codeToId[code], prereqCode);
+        }
+      }
+    }
   });
   insertAll();
 
-  return { seeded: true, programs: PROGRAMS.length };
+  return { seeded: true, programs: PROGRAMS.length, minors: MINORS.length };
 }
 
 // Allow `node src/seedData.js --force` to reseed manually.

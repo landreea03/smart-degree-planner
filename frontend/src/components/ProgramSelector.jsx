@@ -17,7 +17,7 @@ export default function ProgramSelector({ programs, selectedProgramId, onSelect 
         ))}
       </select>
       {programs.find((p) => p.id === selectedProgramId)?.description && (
-        <div style={{ fontSize: "12px", color: "#64748b", marginTop: "6px" }}>
+        <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "6px" }}>
           {programs.find((p) => p.id === selectedProgramId).description}
         </div>
       )}

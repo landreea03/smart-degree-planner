@@ -1,16 +1,10 @@
 import { useMemo, useState } from "react";
+import { CATEGORY_COLOR } from "../utils/categoryColor";
 
 const TERM_ORDER = { Fall: 0, Spring: 1, Summer: 2 };
 
-const CATEGORY_COLOR = {
-  Major: { fill: "#dbeafe", stroke: "#2563eb" },
-  "Math & Science": { fill: "#ede9fe", stroke: "#7c3aed" },
-  "Gen Ed": { fill: "#fef9c3", stroke: "#ca8a04" },
-  Elective: { fill: "#dcfce7", stroke: "#16a34a" },
-};
-
-const NODE_W = 168;
-const NODE_H = 60;
+const NODE_W = 172;
+const NODE_H = 62;
 const COL_GAP = 64;
 const ROW_GAP = 18;
 const COL_HEADER_H = 40;
@@ -83,23 +77,23 @@ export default function CourseMap({ catalog }) {
 
   return (
     <div className="card" style={{ overflowX: "auto" }}>
-      <div style={{ display: "flex", gap: "14px", marginBottom: "10px", flexWrap: "wrap", fontSize: "12px" }}>
+      <div style={{ display: "flex", gap: "16px", marginBottom: "12px", flexWrap: "wrap", fontSize: "12px", alignItems: "center" }}>
         {Object.entries(CATEGORY_COLOR).map(([cat, col]) => (
-          <div key={cat} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: col.fill, border: `1px solid ${col.stroke}`, display: "inline-block" }} />
+          <div key={cat} className="muted" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "9px", height: "9px", borderRadius: "3px", background: col.accent, display: "inline-block" }} />
             {cat}
           </div>
         ))}
-        <div style={{ color: "#94a3b8" }}>Click a course to trace its prerequisite chain.</div>
+        <div className="muted">Click a course to trace its prerequisite chain.</div>
       </div>
 
       <svg width={width} height={height} style={{ display: "block" }}>
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" />
+            <path d="M 0 0 L 10 5 L 0 10 z" style={{ fill: "var(--border-strong)" }} />
           </marker>
           <marker id="arrow-active" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb" />
+            <path d="M 0 0 L 10 5 L 0 10 z" style={{ fill: "var(--accent)" }} />
           </marker>
         </defs>
 
@@ -110,8 +104,8 @@ export default function CourseMap({ catalog }) {
             y={PADDING + 16}
             textAnchor="middle"
             fontSize="12"
-            fontWeight="800"
-            fill="#475569"
+            fontWeight="700"
+            style={{ fill: "var(--text-tertiary)", letterSpacing: "0.02em" }}
           >
             Year {slot.year} · {slot.term}
           </text>
@@ -131,8 +125,8 @@ export default function CourseMap({ catalog }) {
               key={i}
               d={`M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`}
               fill="none"
-              stroke={active ? "#2563eb" : "#cbd5e1"}
-              strokeWidth={active ? 2.5 : 1.5}
+              style={{ stroke: active ? "var(--accent)" : "var(--border-strong)" }}
+              strokeWidth={active ? 2.25 : 1.4}
               markerEnd={active ? "url(#arrow-active)" : "url(#arrow)"}
               opacity={activeCode && !active ? 0.25 : 1}
             />
@@ -149,22 +143,25 @@ export default function CourseMap({ catalog }) {
               key={code}
               transform={`translate(${pos.x}, ${pos.y})`}
               style={{ cursor: "pointer" }}
-              opacity={dimmed ? 0.35 : 1}
+              opacity={dimmed ? 0.3 : 1}
               onClick={() => setActiveCode(activeCode === code ? null : code)}
             >
               <rect
                 width={NODE_W}
                 height={NODE_H}
                 rx="10"
-                fill={color.fill}
-                stroke={code === activeCode ? "#1d4ed8" : color.stroke}
-                strokeWidth={code === activeCode ? 3 : 1.5}
+                style={{
+                  fill: "var(--surface)",
+                  stroke: code === activeCode ? "var(--accent)" : "var(--border)",
+                }}
+                strokeWidth={code === activeCode ? 2 : 1}
               />
-              <text x="10" y="22" fontSize="12" fontWeight="800" fill="#0f172a">{code}</text>
-              <text x="10" y="38" fontSize="10.5" fill="#334155">
+              <rect x="0" y="0" width="4" height={NODE_H} rx="2" style={{ fill: color.accent }} />
+              <text x="13" y="23" fontSize="12" fontWeight="700" style={{ fill: "var(--text-primary)" }}>{code}</text>
+              <text x="13" y="39" fontSize="10.5" style={{ fill: "var(--text-secondary)" }}>
                 {c.name.length > 22 ? `${c.name.slice(0, 21)}…` : c.name}
               </text>
-              <text x="10" y="52" fontSize="10" fill="#64748b">{c.credits} cr</text>
+              <text x="13" y="53" fontSize="10" style={{ fill: "var(--text-tertiary)" }}>{c.credits} cr</text>
             </g>
           );
         })}

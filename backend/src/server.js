@@ -4,6 +4,7 @@ import cors from "cors";
 import { initSchema } from "./db.js";
 import { seed } from "./seedData.js";
 import programsRouter from "./routes/programs.js";
+import minorsRouter from "./routes/minors.js";
 import plansRouter from "./routes/plans.js";
 
 initSchema();
@@ -20,6 +21,7 @@ app.use(express.json());
 
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api/programs", programsRouter);
+app.use("/api/minors", minorsRouter);
 app.use("/api/plans", plansRouter);
 
 app.use((err, req, res, next) => {

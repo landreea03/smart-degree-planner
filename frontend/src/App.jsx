@@ -4,10 +4,12 @@ import Sidebar from "./components/Sidebar";
 import PlannerBoard from "./components/PlannerBoard";
 import CourseDetails from "./components/CourseDetails";
 import ProgramSelector from "./components/ProgramSelector";
+import MinorSelector from "./components/MinorSelector";
 import GpaPanel from "./components/GpaPanel";
 import SavedPlans from "./components/SavedPlans";
 import YearSelector from "./components/YearSelector";
 import CourseMap from "./components/CourseMap";
+import ThemeToggle from "./components/ThemeToggle";
 import api from "./api";
 import {
   detectConflicts,
@@ -17,12 +19,30 @@ import {
   computeBlocked,
   coursesBeforeYear,
   termLabel,
+  mergeCatalogs,
 } from "./utils/scheduler";
 
+function getInitialTheme() {
+  const saved = typeof window !== "undefined" && localStorage.getItem("sdp-theme");
+  if (saved === "light" || saved === "dark") return saved;
+  const prefersDark = typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+  return prefersDark ? "dark" : "light";
+}
+
 export default function App() {
-  // ----- programs / catalog -----
+  // ----- theme -----
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("sdp-theme", theme);
+  }, [theme]);
+
+  // ----- programs / minors / catalog -----
   const [programs, setPrograms] = useState([]);
+  const [minors, setMinors] = useState([]);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
+  const [selectedMinorId, setSelectedMinorId] = useState(null);
   const [masterCatalog, setMasterCatalog] = useState({});
   const [courses, setCourses] = useState({});
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -59,7 +79,7 @@ export default function App() {
   const remainingCredits = totalRequiredCredits - completedCredits;
   const blocked = computeBlocked(board.unscheduled, board.semesters, courses, completedCourses);
 
-  // ----- initial load: programs -----
+  // ----- initial load: programs + minors -----
   useEffect(() => {
     api
       .getPrograms()
@@ -68,20 +88,29 @@ export default function App() {
         if (data.length > 0) setSelectedProgramId(data[0].id);
       })
       .catch((err) => setApiError(err.message));
+
+    api.getMinors().then(setMinors).catch(() => {
+      // Minors are a nice-to-have; don't block the app if this fails.
+    });
   }, []);
 
-  // ----- load catalog + saved plans whenever the program changes -----
+  // ----- load catalog + saved plans whenever the program or minor changes -----
   useEffect(() => {
     if (!selectedProgramId) return;
     // Loading flag for the fetch this effect kicks off below — intentionally
     // synchronous so the "Loading catalog…" state shows on the same render
-    // the program selection changes.
+    // the selection changes.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCatalogLoading(true);
     setApiError(null);
 
-    Promise.all([api.getProgramCatalog(selectedProgramId), api.listPlans(selectedProgramId)])
-      .then(([{ catalog }, plans]) => {
+    Promise.all([
+      api.getProgramCatalog(selectedProgramId),
+      selectedMinorId ? api.getMinorCatalog(selectedMinorId) : Promise.resolve({ catalog: {} }),
+      api.listPlans(selectedProgramId),
+    ])
+      .then(([{ catalog: programCatalog }, { catalog: minorCatalog }, plans]) => {
+        const catalog = mergeCatalogs(programCatalog, minorCatalog);
         setMasterCatalog(catalog);
         setCourses(structuredClone(catalog));
         setCompletedCourses([]);
@@ -96,7 +125,7 @@ export default function App() {
       })
       .catch((err) => setApiError(err.message))
       .finally(() => setCatalogLoading(false));
-  }, [selectedProgramId]);
+  }, [selectedProgramId, selectedMinorId]);
 
   const recomputeConflicts = useCallback(
     (semesters) => {
@@ -267,7 +296,8 @@ export default function App() {
       import("jspdf"),
     ]);
 
-    const canvas = await html2canvas(boardRef.current, { backgroundColor: "#f8fafc", scale: 2 });
+    const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#f6f6f8";
+    const canvas = await html2canvas(boardRef.current, { backgroundColor: bg, scale: 2 });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -281,136 +311,143 @@ export default function App() {
   return (
     <div className="app-root">
       <div className="topbar">
-        <span>🎓 Smart Degree Planner</span>
-        <button className="btn" style={{ background: "rgba(255,255,255,0.15)", color: "white" }} onClick={handleExportPdf}>
-          ⬇ Export PDF
-        </button>
+        <div className="topbar-inner">
+          <div className="brand">
+            <span className="brand-mark">🎓</span>
+            Smart Degree Planner
+          </div>
+          <div className="topbar-actions">
+            <button className="btn btn-ghost" onClick={handleExportPdf}>
+              ⬇ Export PDF
+            </button>
+            <ThemeToggle theme={theme} onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
+          </div>
+        </div>
       </div>
 
       {apiError && (
-        <div style={{ margin: "12px 20px", padding: "12px", background: "#fee2e2", color: "#991b1b", borderRadius: "10px" }}>
-          Couldn't reach the API ({apiError}). Is the backend running? See README for setup.
+        <div className="page-shell" style={{ paddingBottom: 0 }}>
+          <div style={{ padding: "12px 14px", background: "var(--danger-soft)", color: "var(--danger)", borderRadius: "var(--radius)", border: "1px solid var(--danger)", fontSize: "13.5px" }}>
+            Couldn't reach the API ({apiError}). Is the backend running? See README for setup.
+          </div>
         </div>
       )}
 
-      <div className="main-layout">
-        <div className="sidebar-col">
-          <ProgramSelector programs={programs} selectedProgramId={selectedProgramId} onSelect={setSelectedProgramId} />
+      <div className="page-shell">
+        <div className="main-layout">
+          <div className="sidebar-col">
+            <ProgramSelector programs={programs} selectedProgramId={selectedProgramId} onSelect={setSelectedProgramId} />
 
-          <YearSelector
-            startYear={startYear}
-            onChangeStartYear={handleStartYearChange}
-            includeSummer={includeSummer}
-            onToggleSummer={setIncludeSummer}
-          />
+            <MinorSelector minors={minors} selectedMinorId={selectedMinorId} onSelect={setSelectedMinorId} />
 
-          <Sidebar
-            courses={courses}
-            setCourses={setCourses}
-            masterCatalog={masterCatalog}
-            completedCourses={completedCourses}
-            setCompletedCourses={toggleCompleted}
-            selectedCourse={selectedCourse}
-            setSelectedCourse={setSelectedCourse}
-          />
-        </div>
+            <YearSelector
+              startYear={startYear}
+              onChangeStartYear={handleStartYearChange}
+              includeSummer={includeSummer}
+              onToggleSummer={setIncludeSummer}
+            />
 
-        <div className="content">
-          <div className="card" style={{ marginBottom: "12px" }}>
-            <div style={{ fontWeight: "700" }}>🎓 Graduation Progress</div>
-            <div style={{ marginTop: "6px" }}>
-              Completed: {completedCredits} / {totalRequiredCredits} | Planned: {plannedCredits} | Remaining: {remainingCredits}
-            </div>
-            <div style={{ marginTop: "6px", height: "12px", background: "#e5e7eb", borderRadius: "999px", overflow: "hidden" }}>
-              <div style={{ width: `${progressPercent}%`, height: "100%", background: "linear-gradient(90deg,#2563eb,#22c55e)" }} />
-            </div>
+            <Sidebar
+              courses={courses}
+              setCourses={setCourses}
+              masterCatalog={masterCatalog}
+              completedCourses={completedCourses}
+              setCompletedCourses={toggleCompleted}
+              selectedCourse={selectedCourse}
+              setSelectedCourse={setSelectedCourse}
+            />
           </div>
 
-          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-            <button
-              className="btn"
-              style={{ background: view === "planner" ? "#2563eb" : "#f1f5f9", color: view === "planner" ? "white" : "#334155" }}
-              onClick={() => setView("planner")}
-            >
-              🗂 My Plan
-            </button>
-            <button
-              className="btn"
-              style={{ background: view === "map" ? "#2563eb" : "#f1f5f9", color: view === "map" ? "white" : "#334155" }}
-              onClick={() => setView("map")}
-            >
-              🗺 Course Map
-            </button>
-          </div>
+          <div className="content">
+            <div className="card" style={{ marginBottom: "12px" }}>
+              <div style={{ fontWeight: "700" }}>🎓 Graduation Progress</div>
+              <div className="muted" style={{ marginTop: "6px", fontSize: "13.5px" }}>
+                Completed: {completedCredits} / {totalRequiredCredits} &nbsp;·&nbsp; Planned: {plannedCredits} &nbsp;·&nbsp; Remaining: {remainingCredits}
+              </div>
+              <div style={{ marginTop: "8px", height: "8px", background: "var(--surface-2)", borderRadius: "999px", overflow: "hidden" }}>
+                <div style={{ width: `${progressPercent}%`, height: "100%", background: "var(--accent)", transition: "width 0.3s ease" }} />
+              </div>
+            </div>
 
-          {view === "planner" && (
-            <div style={{ display: "flex", gap: "12px", marginBottom: "12px", alignItems: "center" }}>
-              <button className="btn btn-success" onClick={handleGenerate} disabled={catalogLoading}>
-                ⚡ Generate Plan
+            <div className="tabs" style={{ marginBottom: "12px" }}>
+              <button className={`tab-btn ${view === "planner" ? "active" : ""}`} onClick={() => setView("planner")}>
+                🗂 My Plan
               </button>
-              <label style={{ fontSize: "13px", color: "#475569" }}>
-                Max courses / semester{" "}
-                <input
-                  type="number"
-                  min="1"
-                  max="8"
-                  value={maxPerSemester}
-                  onChange={(e) => setMaxPerSemester(Number(e.target.value))}
-                  style={{ width: "60px" }}
+              <button className={`tab-btn ${view === "map" ? "active" : ""}`} onClick={() => setView("map")}>
+                🗺 Course Map
+              </button>
+            </div>
+
+            {view === "planner" && (
+              <div style={{ display: "flex", gap: "12px", marginBottom: "12px", alignItems: "center" }}>
+                <button className="btn btn-success" onClick={handleGenerate} disabled={catalogLoading}>
+                  ⚡ Generate Plan
+                </button>
+                <label className="muted" style={{ fontSize: "13px" }}>
+                  Max courses / semester{" "}
+                  <input
+                    type="number"
+                    min="1"
+                    max="8"
+                    value={maxPerSemester}
+                    onChange={(e) => setMaxPerSemester(Number(e.target.value))}
+                    style={{ width: "56px" }}
+                    className="input"
+                  />
+                </label>
+              </div>
+            )}
+
+            {catalogLoading && (
+              <div className="card">Loading catalog…</div>
+            )}
+
+            {!catalogLoading && view === "planner" && (
+              <div ref={boardRef}>
+                <PlannerBoard
+                  unscheduled={board.unscheduled}
+                  semesters={board.semesters}
+                  catalog={courses}
+                  conflicts={conflicts}
+                  blocked={blocked}
+                  onDragEnd={handleDragEnd}
+                  onAddSemester={handleAddSemester}
+                  onRemoveSemester={handleRemoveSemester}
+                  semesterLabel={(i) => termLabel(i, { startYear, includeSummer })}
                 />
-              </label>
-            </div>
-          )}
+              </div>
+            )}
 
-          {catalogLoading && (
-            <div className="card">Loading catalog…</div>
-          )}
+            {!catalogLoading && view === "map" && <CourseMap catalog={masterCatalog} />}
+          </div>
 
-          {!catalogLoading && view === "planner" && (
-            <div ref={boardRef}>
-              <PlannerBoard
-                unscheduled={board.unscheduled}
-                semesters={board.semesters}
-                catalog={courses}
-                conflicts={conflicts}
-                blocked={blocked}
-                onDragEnd={handleDragEnd}
-                onAddSemester={handleAddSemester}
-                onRemoveSemester={handleRemoveSemester}
-                semesterLabel={(i) => termLabel(i, { startYear, includeSummer })}
-              />
-            </div>
-          )}
+          <div className="details-panel">
+            <GpaPanel completedCourses={completedCourses} grades={grades} catalog={masterCatalog} />
 
-          {!catalogLoading && view === "map" && <CourseMap catalog={masterCatalog} />}
-        </div>
+            <SavedPlans
+              plans={savedPlans}
+              activePlanId={activePlanId}
+              onSave={handleSavePlan}
+              onLoad={handleLoadPlan}
+              onDelete={handleDeletePlan}
+              saving={saving}
+            />
 
-        <div className="details-panel">
-          <GpaPanel completedCourses={completedCourses} grades={grades} catalog={masterCatalog} />
+            {activePlanId && (
+              <button className="btn btn-primary" style={{ width: "100%", marginBottom: "12px" }} onClick={handleUpdatePlan} disabled={saving}>
+                💾 Update "{savedPlans.find((p) => p.id === activePlanId)?.name}"
+              </button>
+            )}
 
-          <SavedPlans
-            plans={savedPlans}
-            activePlanId={activePlanId}
-            onSave={handleSavePlan}
-            onLoad={handleLoadPlan}
-            onDelete={handleDeletePlan}
-            saving={saving}
-          />
-
-          {activePlanId && (
-            <button className="btn btn-primary" style={{ width: "100%", marginBottom: "12px" }} onClick={handleUpdatePlan} disabled={saving}>
-              💾 Update "{savedPlans.find((p) => p.id === activePlanId)?.name}"
-            </button>
-          )}
-
-          <CourseDetails
-            selectedCourse={selectedCourse}
-            courses={courses}
-            isCompleted={completedCourses.includes(selectedCourse)}
-            grade={grades[selectedCourse]}
-            onGradeChange={handleGradeChange}
-            onDelete={handleDeleteCourse}
-          />
+            <CourseDetails
+              selectedCourse={selectedCourse}
+              courses={courses}
+              isCompleted={completedCourses.includes(selectedCourse)}
+              grade={grades[selectedCourse]}
+              onGradeChange={handleGradeChange}
+              onDelete={handleDeleteCourse}
+            />
+          </div>
         </div>
       </div>
     </div>

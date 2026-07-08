@@ -138,7 +138,7 @@ export default function Sidebar({
 
             <div onClick={() => editCourse(code)} style={{ cursor: "pointer" }}>
               <b>{code}</b>
-              <div style={{ fontSize: "12px", color: "#6b7280" }}>{c.name}</div>
+              <div className="muted" style={{ fontSize: "12px" }}>{c.name}</div>
             </div>
           </div>
         ))}
@@ -216,6 +216,7 @@ export default function Sidebar({
         <option>Math & Science</option>
         <option>Gen Ed</option>
         <option>Elective</option>
+        <option>Minor</option>
       </select>
 
       <div style={{ display: "flex", gap: "8px" }}>
@@ -249,7 +250,7 @@ export default function Sidebar({
       />
 
       {/* ===== PREREQUISITES ===== */}
-      <div style={{ fontSize: "12px", marginTop: "6px", marginBottom: "4px" }}>
+      <div className="muted" style={{ fontSize: "12px", marginTop: "6px", marginBottom: "4px", fontWeight: 600 }}>
         Prerequisites
       </div>
 
@@ -276,8 +277,8 @@ export default function Sidebar({
 
       {selectedCourse && (
         <button
-          className="btn"
-          style={{ width: "100%", marginTop: "6px", background: "#fee2e2" }}
+          className="btn btn-danger-soft"
+          style={{ width: "100%", marginTop: "6px" }}
           onClick={deleteCourse}
         >
           🗑 Delete Course

@@ -1,54 +1,178 @@
+/* =========================================================
+   THEME TOKENS
+   Light theme is the default; [data-theme="dark"] overrides.
+   Every color used anywhere in the app should trace back to
+   one of these variables so the toggle in ThemeToggle.jsx
+   actually repaints everything.
+========================================================= */
 :root {
-  --bg: #eef2f7;
-  --panel: rgba(255,255,255,0.95);
-  --shadow: 0 10px 30px rgba(0,0,0,0.08);
-  --radius: 16px;
-  --blue: #2563eb;
-  --green: #16a34a;
-  --purple: #7c3aed;
-  --yellow: #ca8a04;
+  --bg: #f6f6f8;
+  --surface: #ffffff;
+  --surface-2: #f2f3f5;
+  --surface-hover: #f9fafb;
+  --border: #e5e7eb;
+  --border-strong: #d4d4d8;
+
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-tertiary: #9ca3af;
+  --text-on-accent: #ffffff;
+
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef2ff;
+  --accent-soft-strong: #e0e7ff;
+
+  --success: #16a34a;
+  --success-soft: #f0fdf4;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --warning: #d97706;
+  --warning-soft: #fffbeb;
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 2px 8px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.10), 0 2px 6px rgba(16, 24, 40, 0.06);
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+
+  /* requirement-category tokens (used by GpaPanel, CourseMap, PlannerBoard) */
+  --cat-major: #4f46e5;
+  --cat-major-soft: #eef2ff;
+  --cat-mathsci: #7c3aed;
+  --cat-mathsci-soft: #f3ecff;
+  --cat-genEd: #b45309;
+  --cat-genEd-soft: #fef6e7;
+  --cat-elective: #0d9488;
+  --cat-elective-soft: #ecfdf9;
+  --cat-minor: #db2777;
+  --cat-minor-soft: #fdf0f6;
+}
+
+[data-theme="dark"] {
+  --bg: #0c0d10;
+  --surface: #16171b;
+  --surface-2: #1e2025;
+  --surface-hover: #202226;
+  --border: #2a2c32;
+  --border-strong: #3a3d44;
+
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #6b7280;
+  --text-on-accent: #ffffff;
+
+  --accent: #818cf8;
+  --accent-hover: #a5b4fc;
+  --accent-soft: rgba(129, 140, 248, 0.16);
+  --accent-soft-strong: rgba(129, 140, 248, 0.26);
+
+  --success: #4ade80;
+  --success-soft: rgba(74, 222, 128, 0.14);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.14);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.14);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.5);
+
+  --cat-major: #818cf8;
+  --cat-major-soft: rgba(129, 140, 248, 0.16);
+  --cat-mathsci: #c4b5fd;
+  --cat-mathsci-soft: rgba(196, 181, 253, 0.16);
+  --cat-genEd: #fbbf24;
+  --cat-genEd-soft: rgba(251, 191, 36, 0.14);
+  --cat-elective: #5eead4;
+  --cat-elective-soft: rgba(94, 234, 212, 0.14);
+  --cat-minor: #f472b6;
+  --cat-minor-soft: rgba(244, 114, 182, 0.16);
 }
 
 * {
   box-sizing: border-box;
-  font-family: Inter, system-ui, -apple-system, sans-serif;
 }
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, #eaf0f7, #f8fafc);
-  color: #0f172a;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .app-root {
   min-height: 100vh;
 }
 
-/* ===== TOP BAR ===== */
+/* =========================================================
+   TOP BAR
+========================================================= */
 .topbar {
-  background: linear-gradient(135deg, #2563eb, #4f46e5);
-  color: white;
-  font-size: 22px;
-  font-weight: 800;
-  padding: 20px 32px;
-  letter-spacing: 0.3px;
-  box-shadow: var(--shadow);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.topbar-inner {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
 }
 
-.topbar button {
-  font-size: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
 }
 
-/* ===== LAYOUT ===== */
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+.page-shell {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
 .main-layout {
   display: grid;
-  grid-template-columns: 360px 1fr 360px;
+  grid-template-columns: 320px 1fr 320px;
   gap: 20px;
-  padding: 20px;
   align-items: start;
 }
 
@@ -58,134 +182,299 @@ body {
   gap: 16px;
 }
 
-.sidebar-col .sidebar {
-  min-height: 0;
+.content {
+  background: transparent;
+  min-width: 0;
 }
 
-.program-selector {
-  padding: 14px 16px;
-}
-
-/* ===== PANELS ===== */
-.sidebar,
-.content,
 .details-panel {
-  background: var(--panel);
+  background: transparent;
+}
+
+/* =========================================================
+   CARD (generic content block used throughout the app)
+========================================================= */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
-  box-shadow: var(--shadow);
-  position: relative;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
 }
 
-/* ===== CARD (generic content block used throughout the app) ===== */
-.card {
-  background: white;
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+.sidebar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
 }
 
-/* ⚠️ REMOVE BLUR — it breaks drag coordinates */
-/* backdrop-filter: blur(12px); ❌ REMOVED */
+/* =========================================================
+   TYPOGRAPHY
+========================================================= */
+h1, h2, h3 {
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+}
 
-/* ===== HEADERS ===== */
 .section-title {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin: 16px 0 8px;
-  color: #475569;
+  margin: 18px 0 8px;
+  color: var(--text-tertiary);
 }
 
-/* ===== INPUTS ===== */
+.section-title:first-child {
+  margin-top: 0;
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+/* =========================================================
+   INPUTS
+========================================================= */
 .input {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 13.5px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-/* ===== BUTTONS ===== */
+/* =========================================================
+   BUTTONS
+========================================================= */
 .btn {
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 700;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  font-weight: 600;
+  font-size: 13.5px;
+  font-family: inherit;
   cursor: pointer;
+  background: var(--surface-2);
+  color: var(--text-primary);
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
 }
 
-/* ❌ REMOVED transitions that might use transform */
+.btn:hover {
+  background: var(--surface-hover);
+}
 
-.btn-success {
-  background: linear-gradient(135deg, #16a34a, #22c55e);
-  color: white;
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-success {
+  background: var(--success);
   color: white;
 }
 
-/* ===== COURSE LIST ===== */
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-2);
+}
+
+.btn-danger-soft {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn-danger-soft:hover {
+  filter: brightness(0.97);
+}
+
+.btn-icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.btn-icon:hover {
+  background: var(--surface-hover);
+}
+
+/* segmented tab control */
+.tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.tab-btn {
+  border: none;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================================================
+   BADGES
+========================================================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+/* =========================================================
+   COURSE LIST (sidebar)
+========================================================= */
 .course-item {
-  padding: 10px;
-  border-radius: 12px;
-  margin-bottom: 6px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
   cursor: pointer;
   border: 1px solid transparent;
-  font-weight: 600;
+  font-weight: 500;
   position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.course-item:hover {
+  background: var(--surface-2);
 }
 
 .course-item.selected {
-  outline: 3px solid rgba(37,99,235,0.3);
+  background: var(--accent-soft);
+  border-color: var(--accent-soft-strong);
 }
 
-/* ===== PLANNER ===== */
+/* =========================================================
+   PLANNER
+========================================================= */
 .planner-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
   position: relative;
 }
 
 .semester-card {
   position: relative;
-  border-radius: 20px;
-  padding: 16px;
-  box-shadow: var(--shadow);
-  background: white;
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
-/* ===== COURSE CARDS ===== */
+/* =========================================================
+   COURSE CHIPS
+   Color-coded by requirement category (not department) so the
+   same color language is shared across the planner, GPA panel,
+   and Course Map.
+   NOTE: @hello-pangea/dnd animates dragged chips via inline
+   `transform` styles — nothing here should override that.
+========================================================= */
 .course-chip {
-  padding: 10px;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  font-weight: 700;
-  text-align: center;
+  padding: 9px 10px 9px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  font-weight: 600;
   position: relative;
-}
-
-/* Department colors are now computed per-code in JS (see utils/deptColor.js)
-   so any program's catalog gets consistent chip colors automatically.
-   NOTE: @hello-pangea/dnd animates dragged chips via inline `transform`
-   styles, so nothing here should force `transform: none` on planner
-   elements — that would silently break drag-and-drop. */
-.course-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--chip-accent, var(--accent));
   user-select: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-/* ===== RESPONSIVE ===== */
+.course-chip:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* =========================================================
+   SCROLLBAR (subtle, matches theme)
+========================================================= */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 @media (max-width: 1100px) {
   .main-layout {
     grid-template-columns: 1fr;

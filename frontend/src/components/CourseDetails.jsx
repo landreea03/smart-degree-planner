@@ -1,11 +1,12 @@
 import { GRADE_OPTIONS } from "../utils/gpa";
+import { categoryColor } from "../utils/categoryColor";
 
 export default function CourseDetails({ selectedCourse, courses, onDelete, isCompleted, grade, onGradeChange }) {
 
   if (!selectedCourse || !courses[selectedCourse]) {
     return (
       <div className="card">
-        <div style={{ color: "#64748b" }}>
+        <div className="muted">
           Select a course to see details
         </div>
       </div>
@@ -13,29 +14,27 @@ export default function CourseDetails({ selectedCourse, courses, onDelete, isCom
   }
 
   const course = courses[selectedCourse];
+  const color = categoryColor(course.category);
 
   return (
     <div className="card">
-      <h2>{selectedCourse} — {course.name}</h2>
+      <h2 style={{ fontSize: "17px" }}>{selectedCourse} — {course.name}</h2>
 
       {course.category && (
         <span
+          className="badge"
           style={{
-            display: "inline-block",
-            fontSize: "11px",
-            fontWeight: 700,
-            padding: "3px 8px",
-            borderRadius: "999px",
-            background: "#eef2ff",
-            color: "#4338ca",
+            background: color.soft,
+            color: color.accent,
             marginBottom: "8px",
           }}
         >
+          <span className="badge-dot" />
           {course.category}
         </span>
       )}
 
-      <div style={{ marginBottom: "8px", color: "#475569" }}>
+      <div className="muted" style={{ marginBottom: "8px", fontSize: "13.5px" }}>
         {course.description}
       </div>
 
@@ -74,8 +73,8 @@ export default function CourseDetails({ selectedCourse, courses, onDelete, isCom
       )}
 
       <button
-        className="btn"
-        style={{ marginTop: "12px", background: "#fee2e2" }}
+        className="btn btn-danger-soft"
+        style={{ marginTop: "12px" }}
         onClick={onDelete}
       >
         🗑 Delete Course

@@ -8,3 +8,6 @@ node_modules
 # Environment files (see .env.example in each workspace)
 .env
 .env.local
+
+# stray scratch file from local testing — safe to delete manually
+frontend/src/utils/rmtest_delete_me.txt
