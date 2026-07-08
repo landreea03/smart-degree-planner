@@ -33,6 +33,14 @@ body {
   padding: 20px 32px;
   letter-spacing: 0.3px;
   box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar button {
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 /* ===== LAYOUT ===== */
@@ -41,6 +49,21 @@ body {
   grid-template-columns: 360px 1fr 360px;
   gap: 20px;
   padding: 20px;
+  align-items: start;
+}
+
+.sidebar-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-col .sidebar {
+  min-height: 0;
+}
+
+.program-selector {
+  padding: 14px 16px;
 }
 
 /* ===== PANELS ===== */
@@ -52,6 +75,14 @@ body {
   padding: 16px;
   box-shadow: var(--shadow);
   position: relative;
+}
+
+/* ===== CARD (generic content block used throughout the app) ===== */
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
 /* ⚠️ REMOVE BLUR — it breaks drag coordinates */
@@ -145,30 +176,18 @@ body {
   position: relative;
 }
 
-/* ===== DEPARTMENT COLORS ===== */
-.course-chip.CS, .course-item.CS {
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  border: 1px solid var(--blue);
-}
-
-.course-chip.MATH, .course-item.MATH {
-  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-  border: 1px solid var(--green);
-}
-
-.course-chip.PHYS, .course-item.PHYS {
-  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-  border: 1px solid var(--purple);
-}
-
-.course-chip.ENGL, .course-item.ENGL {
-  background: linear-gradient(135deg, #fef9c3, #fef08a);
-  border: 1px solid var(--yellow);
-}
-
-/* ===== HARD OVERRIDE SAFETY ===== */
-.planner-grid,
-.semester-card,
+/* Department colors are now computed per-code in JS (see utils/deptColor.js)
+   so any program's catalog gets consistent chip colors automatically.
+   NOTE: @hello-pangea/dnd animates dragged chips via inline `transform`
+   styles, so nothing here should force `transform: none` on planner
+   elements — that would silently break drag-and-drop. */
 .course-chip {
-  transform: none !important;
+  user-select: none;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
 }

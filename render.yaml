@@ -1,0 +1,20 @@
+# Render Blueprint for the API — see https://render.com/docs/blueprint-spec
+# In the Render dashboard: New > Blueprint > point at this repo, and Render
+# will pick this file up automatically.
+services:
+  - type: web
+    name: smart-degree-planner-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: CORS_ORIGIN
+        sync: false # set this to your deployed frontend URL, e.g. https://your-app.vercel.app
+      - key: DB_PATH
+        value: ./data/planner.db
+    # Render's free plan uses an ephemeral disk, so the SQLite file (and any
+    # saved plans) resets on redeploy/restart — fine for a portfolio demo.
+    # For real persistence, attach a paid persistent disk mounted at
+    # /opt/render/project/src/backend/data and it'll survive restarts.

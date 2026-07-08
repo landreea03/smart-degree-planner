@@ -1,0 +1,9 @@
+# npm workspaces hoist shared deps to the root node_modules
+node_modules
+
+.DS_Store
+*.log
+
+# Environment files (see .env.example in each workspace)
+.env
+.env.local

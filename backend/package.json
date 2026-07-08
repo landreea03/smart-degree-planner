@@ -1,0 +1,21 @@
+{
+  "name": "smart-degree-planner-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "REST API for Smart Degree Planner: degree programs, course catalogs, and saved plans.",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch src/server.js",
+    "seed": "node --disable-warning=ExperimentalWarning src/seedData.js --force"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

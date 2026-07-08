@@ -28,6 +28,7 @@ export default function Sidebar({
     days: "",
     time: "",
     mode: "In-Person",
+    category: "Elective",
     prereq: []
   };
 
@@ -72,7 +73,8 @@ export default function Sidebar({
       prereq: draft.prereq || [],
       days: draft.days || "",
       time: draft.time || "",
-      mode: draft.mode || "In-Person"
+      mode: draft.mode || "In-Person",
+      category: draft.category || "Elective"
     };
 
     setCourses(copy);
@@ -199,6 +201,17 @@ export default function Sidebar({
         <option>In-Person</option>
         <option>Hybrid</option>
         <option>Online</option>
+      </select>
+
+      <select
+        className="input"
+        value={draft.category || "Elective"}
+        onChange={e => setDraft(d => ({ ...d, category: e.target.value }))}
+      >
+        <option>Major</option>
+        <option>Math & Science</option>
+        <option>Gen Ed</option>
+        <option>Elective</option>
       </select>
 
       <textarea
