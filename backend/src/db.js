@@ -59,6 +59,26 @@ export function initSchema() {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  migrate();
+}
+
+/**
+ * `CREATE TABLE IF NOT EXISTS` only creates a table the first time — it does
+ * nothing to a table that already exists with an older shape. So when a
+ * column gets added to the schema after someone already has a database file
+ * on disk (e.g. `year_level`/`term`, added after the first release), it has
+ * to be backfilled here explicitly or every existing DB stays stale forever.
+ */
+function migrate() {
+  const existing = new Set(db.prepare("PRAGMA table_info(courses)").all().map((c) => c.name));
+
+  if (!existing.has("year_level")) {
+    db.exec("ALTER TABLE courses ADD COLUMN year_level INTEGER NOT NULL DEFAULT 1");
+  }
+  if (!existing.has("term")) {
+    db.exec("ALTER TABLE courses ADD COLUMN term TEXT NOT NULL DEFAULT 'Fall'");
+  }
 }
 
 /** Run `fn` inside a BEGIN/COMMIT block, rolling back on error. */
