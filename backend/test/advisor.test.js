@@ -2,19 +2,43 @@ import "./setupEnv.js";
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { createApp } from "../src/app.js";
+import { db } from "../src/db.js";
 import { startTestServer, firstCookiePair } from "./helpers/testServer.js";
 
 let server, baseUrl, programId;
 
+// The public signup route always creates a student (see routes/auth.js) —
+// deliberately, so nobody can self-promote to advisor. To test advisor
+// behavior, sign up normally and then patch the role directly in the test
+// database, the same way the real promoteAdvisor.js script would. A fresh
+// login afterward is required because the role is baked into the JWT at
+// sign time, not looked up per-request.
 async function signup(email, role = "student", password = "hunter2222") {
-  const res = await fetch(`${baseUrl}/api/auth/signup`, {
+  const signupRes = await fetch(`${baseUrl}/api/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, role }),
+    body: JSON.stringify({ email, password }),
   });
-  assert.equal(res.status, 201);
-  const body = await res.json();
-  return { cookie: firstCookiePair(res), user: body };
+  assert.equal(signupRes.status, 201);
+  const signupBody = await signupRes.json();
+  assert.equal(signupBody.role, "student");
+
+  if (role === "student") {
+    return { cookie: firstCookiePair(signupRes), user: signupBody };
+  }
+
+  db.prepare("UPDATE users SET role = ? WHERE id = ?").run(role, signupBody.id);
+
+  const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  assert.equal(loginRes.status, 200);
+  const loginBody = await loginRes.json();
+  assert.equal(loginBody.role, role);
+
+  return { cookie: firstCookiePair(loginRes), user: loginBody };
 }
 
 before(async () => {
@@ -26,13 +50,20 @@ before(async () => {
 
 after(() => server.close());
 
-test("signup rejects an invalid role", async () => {
+test("signup always creates a student account, even if the client asks for 'advisor'", async () => {
   const res = await fetch(`${baseUrl}/api/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: "bad-role@example.com", password: "hunter2222", role: "superadmin" }),
+    body: JSON.stringify({ email: "sneaky@example.com", password: "hunter2222", role: "advisor" }),
   });
-  assert.equal(res.status, 400);
+  assert.equal(res.status, 201);
+  const body = await res.json();
+  assert.equal(body.role, "student");
+
+  // And that account genuinely can't reach advisor routes.
+  const cookie = firstCookiePair(res);
+  const advisorRes = await fetch(`${baseUrl}/api/advisor/students`, { headers: { Cookie: cookie } });
+  assert.equal(advisorRes.status, 403);
 });
 
 test("advisor routes require authentication", async () => {

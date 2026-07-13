@@ -37,8 +37,10 @@ export const api = {
   updatePlan: (id, plan) => request(`/api/plans/${id}`, { method: "PUT", body: JSON.stringify(plan) }),
   deletePlan: (id) => request(`/api/plans/${id}`, { method: "DELETE" }),
 
-  signup: (email, password, name, role) =>
-    request("/api/auth/signup", { method: "POST", body: JSON.stringify({ email, password, name, role }) }),
+  // No role param: the server always creates a student account (see
+  // backend/src/routes/auth.js for why advisor is never client-settable).
+  signup: (email, password, name) =>
+    request("/api/auth/signup", { method: "POST", body: JSON.stringify({ email, password, name }) }),
   login: (email, password) => request("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   logout: () => request("/api/auth/logout", { method: "POST" }),
   me: () => request("/api/auth/me"),

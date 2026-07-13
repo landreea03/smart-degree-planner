@@ -111,6 +111,16 @@ cd frontend && npm install && npm run dev    # UI on :5173
 | PUT | `/api/advisor/plans/:id/status` | Advisor | Mark a plan `none` / `approved` / `flagged` |
 | GET | `/api/advisor/analytics` | Advisor | Cross-plan aggregates (common courses, at-risk courses, avg. time to graduate, plan status breakdown) |
 
+## Advisor accounts
+
+The public sign-up form always creates a `student` account — the `role` field is never read from the request, so nobody can grant themselves advisor access (which allows reading every other user's saved plans). To promote an account to advisor, run this from the backend, against the database you actually want to change:
+
+```bash
+npm run promote-advisor -- you@example.com
+```
+
+On Render, do this from the `smart-degree-planner-api` service's **Shell** tab (working directory is already `backend`, so the command above works as-is). Sign out and back in afterward — the role is baked into the session token at login, so it won't take effect until you get a fresh one.
+
 ## Project structure
 
 ```
@@ -154,7 +164,6 @@ Backend tests spin up the real Express app (via `createApp()`) on an ephemeral p
 - Course catalog edits made in the UI are local to your browser session and aren't written back to the database.
 - No password reset flow — losing your password on the live demo means creating a new account.
 - Advisor analytics are global (across every student/program in the database), not scoped per-institution or per-cohort — fine for a single-deployment demo, would need a tenancy model for a real multi-school rollout.
-- Anyone can sign up as an advisor at sign-up time; there's no verification step gating who gets that role, which is a deliberate simplification for a demo (a real deployment would invite/approve advisors rather than let anyone self-select).
 
 ## Possible next steps
 
