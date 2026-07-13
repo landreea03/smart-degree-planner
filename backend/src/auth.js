@@ -9,7 +9,9 @@ if (!process.env.JWT_SECRET && process.env.NODE_ENV === "production") {
 }
 
 export function signToken(user) {
-  return jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, { expiresIn: TOKEN_TTL });
+  return jwt.sign({ sub: user.id, email: user.email, role: user.role || "student" }, JWT_SECRET, {
+    expiresIn: TOKEN_TTL,
+  });
 }
 
 export function verifyToken(token) {
@@ -38,13 +40,20 @@ export function clearAuthCookie(res) {
 export function attachUser(req, res, next) {
   const token = req.cookies?.[COOKIE_NAME];
   const payload = token ? verifyToken(token) : null;
-  req.user = payload ? { id: payload.sub, email: payload.email } : null;
+  req.user = payload ? { id: payload.sub, email: payload.email, role: payload.role || "student" } : null;
   next();
 }
 
 /** Blocks the request with 401 unless `attachUser` found a valid session. */
 export function requireAuth(req, res, next) {
   if (!req.user) return res.status(401).json({ error: "Sign in required" });
+  next();
+}
+
+/** Blocks the request with 403 unless the signed-in user has the "advisor" role. */
+export function requireAdvisor(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: "Sign in required" });
+  if (req.user.role !== "advisor") return res.status(403).json({ error: "Advisor access required" });
   next();
 }
 

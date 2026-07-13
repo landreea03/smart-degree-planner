@@ -344,6 +344,27 @@ export const MINORS = [
   },
 ];
 
+// Real degree catalogs don't offer every course every semester — capstones,
+// seminars, and thesis-style courses are typically run once a year, and
+// lower-level gen-ed/math courses are often available in summer sessions
+// too. Rather than hand-annotate 200+ literal course entries, derive a
+// realistic `offeredTerms` from fields the catalog already carries. This is
+// what gives the graduation-forecast engine (frontend/src/utils/scheduler.js)
+// real constraints to reason about instead of an unconstrained schedule.
+function computeOfferedTerms(course) {
+  const name = course.name.toLowerCase();
+  const isOnceAYear = /capstone|seminar|thesis|senior project|strategic management|independent study|research (design|methods)|selected topics/.test(
+    name
+  );
+  if (isOnceAYear) return course.term;
+
+  if (course.year <= 2 && (course.category === "Gen Ed" || course.category === "Math & Science")) {
+    return "Fall,Spring,Summer";
+  }
+
+  return "Fall,Spring";
+}
+
 export function isEmpty() {
   const row = db.prepare("SELECT COUNT(*) AS n FROM programs").get();
   return row.n === 0;
@@ -367,8 +388,8 @@ export function seed({ force = false } = {}) {
     "INSERT INTO programs (code, name, description, degree_type) VALUES (@code, @name, @description, @degree_type)"
   );
   const insertCourse = db.prepare(
-    `INSERT INTO courses (program_id, code, name, credits, description, days, time, mode, category, year_level, term)
-     VALUES (@program_id, @code, @name, @credits, @description, @days, @time, @mode, @category, @year_level, @term)`
+    `INSERT INTO courses (program_id, code, name, credits, description, days, time, mode, category, year_level, term, offered_terms)
+     VALUES (@program_id, @code, @name, @credits, @description, @days, @time, @mode, @category, @year_level, @term, @offered_terms)`
   );
   const insertPrereq = db.prepare(
     "INSERT INTO course_prereqs (course_id, prereq_code) VALUES (?, ?)"
@@ -378,8 +399,8 @@ export function seed({ force = false } = {}) {
     "INSERT INTO minors (code, name, description) VALUES (@code, @name, @description)"
   );
   const insertMinorCourse = db.prepare(
-    `INSERT INTO minor_courses (minor_id, code, name, credits, description, days, time, mode, year_level, term)
-     VALUES (@minor_id, @code, @name, @credits, @description, @days, @time, @mode, @year_level, @term)`
+    `INSERT INTO minor_courses (minor_id, code, name, credits, description, days, time, mode, year_level, term, offered_terms)
+     VALUES (@minor_id, @code, @name, @credits, @description, @days, @time, @mode, @year_level, @term, @offered_terms)`
   );
   const insertMinorPrereq = db.prepare(
     "INSERT INTO minor_course_prereqs (course_id, prereq_code) VALUES (?, ?)"
@@ -409,6 +430,7 @@ export function seed({ force = false } = {}) {
           category: c.category,
           year_level: c.year,
           term: c.term,
+          offered_terms: computeOfferedTerms(c),
         });
         codeToId[code] = courseId;
       }
@@ -441,6 +463,7 @@ export function seed({ force = false } = {}) {
           mode: c.mode,
           year_level: c.year,
           term: c.term,
+          offered_terms: computeOfferedTerms(c),
         });
         codeToId[code] = courseId;
       }

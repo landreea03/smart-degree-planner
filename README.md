@@ -8,7 +8,10 @@ A full-stack degree-planning tool: create an account, pick a program, drag cours
 
 ## Features
 
-- **Real user accounts** — email/password sign-up and sign-in with bcrypt-hashed passwords and JWT session cookies. Saved plans are private per account; only their owner can read, update, or delete them.
+- **Real user accounts, two roles** — email/password sign-up and sign-in with bcrypt-hashed passwords and JWT session cookies. Students' saved plans are private to their account; advisors get a separate role with read access across every student.
+- **Graduation forecast** — a constraint-satisfaction engine that simulates the rest of a degree semester by semester, respecting *both* prerequisites and the fact that real courses aren't offered every term (capstones and seminars often run once a year). Projects an actual graduation term and flags the specific "bottleneck" courses — the ones anchoring your longest prerequisite chain, or only offered once a year — that are constraining your timeline.
+- **Course recommendations** — a rules-based "what should I take next" engine that scores eligible courses by how many future courses they unlock and how far behind their requirement category is, with a plain-language reason attached to every pick.
+- **Advisor dashboard** — a second account role that can browse every student, drill into any of their saved plans (read-only, cross-account), leave notes tied to a specific course, and mark a plan approved or flagged — plus a campus-wide analytics view (most commonly scheduled courses, at-risk courses by D/F grade frequency, average semesters to graduate, plan status breakdown).
 - **9 degree programs** — Computer Science, Business Administration, Psychology, Biology, Mechanical Engineering, Nursing, English, Mathematics, and Communication Studies, each with its own realistic course catalog, prerequisites, and credit requirements, served from a real database.
 - **6 minors** — Business, Computer Science, Psychology, Data Science, Writing, and Spanish. Pick any minor alongside any major; its courses merge into the same plan (tagged "Minor") and count toward the same GPA/requirement tracking and schedule-conflict checks.
 - **"What year are you?" selector** — pick Freshman/Sophomore/Junior/Senior and every course recommended for earlier years is automatically marked completed, with an optional toggle to include summer terms in the plan.
@@ -21,7 +24,7 @@ A full-stack degree-planning tool: create an account, pick a program, drag cours
 - **Export to PDF** — one click exports the current planner board as a PDF.
 - **Editable catalog** — add, edit, or remove courses from the working catalog directly in the UI.
 - **Light/dark theme** — a toggle in the top bar switches the whole app between a clean light theme and a dark theme, persisted across visits.
-- **Automated tests + CI** — 17 backend integration tests (`node:test`) covering auth, program/minor catalog integrity, and per-user plan access control, plus 30 frontend unit tests (Vitest) covering the scheduling and GPA engines. GitHub Actions runs both suites, lint, and a production build on every push and pull request.
+- **Automated tests + CI** — 23 backend integration tests (`node:test`) covering auth, role-based access control, catalog integrity, and per-user plan isolation, plus 46 frontend unit tests (Vitest) covering the scheduling, GPA, graduation-forecast, and recommendation engines. GitHub Actions runs both suites, lint, and a production build on every push and pull request.
 
 ## Tech stack
 
@@ -53,7 +56,13 @@ Color is a first-class piece of the data model, not just styling: every course's
 
 Scheduling and conflict-detection logic (topological sort, time-overlap checks, prerequisite-blocking checks, year/term labeling, catalog merging) lives in pure functions under `frontend/src/utils/`, decoupled from React, so it's independently testable.
 
-Auth is a `users` table plus a JWT signed on sign-up/sign-in and stored in an httpOnly cookie — the token is never touched by client JS, which rules out theft via XSS. Every `/api/plans/*` route requires that cookie and filters its SQL by `user_id`, so one account can never read, update, or delete another's plans (covered by a dedicated test). `backend/src/app.js` exports a `createApp()` factory that builds the Express app without starting a listener, so the test suite can spin up a real instance on an ephemeral port instead of mocking anything.
+Auth is a `users` table plus a JWT signed on sign-up/sign-in and stored in an httpOnly cookie — the token is never touched by client JS, which rules out theft via XSS. The JWT payload carries the user's `role` (`student` or `advisor`), so `backend/src/auth.js` can gate routes with a `requireAdvisor` middleware without an extra DB round trip per request. Every `/api/plans/*` route requires that cookie and filters its SQL by `user_id`, so one account can never read, update, or delete another's plans (covered by a dedicated test). Advisor routes (`/api/advisor/*`) are the deliberate exception — they're allowed to read *any* student's plans, but only for accounts with `role = 'advisor'`. `backend/src/app.js` exports a `createApp()` factory that builds the Express app without starting a listener, so the test suite can spin up a real instance on an ephemeral port instead of mocking anything.
+
+**Graduation forecast** (`estimateGraduation` in `frontend/src/utils/scheduler.js`) turns "when will I graduate" into a real constraint-satisfaction problem instead of a simple `remaining credits ÷ max per semester` estimate. Every course carries an `offeredTerms` list (derived at seed time in `backend/src/seedData.js` from course metadata already in the catalog — capstones/seminars/thesis-style courses become once-a-year, lower-level gen-ed/math courses get summer availability too), and the forecast greedily schedules term by term, only placing a course when both its prerequisites are satisfied *and* it's actually offered that term. A companion critical-path analysis (`computeBottlenecks`) walks the prerequisite DAG to find each course's longest dependency chain, so it can name the specific courses that are constraining the timeline rather than just reporting a date.
+
+**Course recommendations** (`recommendNextSemester` in `frontend/src/utils/recommend.js`) is a small, fully explainable rules engine — no ML, no black box. It scores every eligible course by how many other courses it unlocks (out-degree in the prerequisite graph) and how far behind its requirement category is, with a light credit penalty to avoid always recommending the heaviest courses. Every recommendation returns its reasoning in plain language alongside the course code.
+
+Both engines are pure functions with no React or Express dependency, which is what makes them straightforward to unit test in isolation (see `scheduler.test.js` and `recommend.test.js`).
 
 ## Getting started
 
@@ -95,6 +104,12 @@ cd frontend && npm install && npm run dev    # UI on :5173
 | POST | `/api/plans` | Yes | Create a saved plan owned by the signed-in user |
 | PUT | `/api/plans/:id` | Yes | Update a saved plan (must be owned by the signed-in user) |
 | DELETE | `/api/plans/:id` | Yes | Delete a saved plan (must be owned by the signed-in user) |
+| GET | `/api/advisor/students` | Advisor | Every student account, with saved-plan counts |
+| GET | `/api/advisor/students/:id/plans` | Advisor | One student's saved plans |
+| GET | `/api/advisor/plans/:id` | Advisor | Any single plan (any owner), plus notes |
+| POST | `/api/advisor/plans/:id/notes` | Advisor | Leave a note on a plan, optionally tied to a course |
+| PUT | `/api/advisor/plans/:id/status` | Advisor | Mark a plan `none` / `approved` / `flagged` |
+| GET | `/api/advisor/analytics` | Advisor | Cross-plan aggregates (common courses, at-risk courses, avg. time to graduate, plan status breakdown) |
 
 ## Project structure
 
@@ -102,21 +117,23 @@ cd frontend && npm install && npm run dev    # UI on :5173
 backend/
   src/
     db.js           SQLite connection + schema + migrations
-    auth.js          JWT/cookie session helpers (sign, verify, requireAuth middleware)
-    seedData.js      Program + minor catalogs, seeding logic
-    routes/          auth.js, programs.js, minors.js, plans.js
+    auth.js          JWT/cookie session helpers (sign, verify, requireAuth, requireAdvisor)
+    seedData.js      Program + minor catalogs, seeding logic, offeredTerms derivation
+    routes/          auth.js, programs.js, minors.js, plans.js, advisor.js
     app.js           createApp() factory (used by both server.js and the test suite)
     server.js        Starts the HTTP listener
-  test/              node:test integration tests (auth, programs, minors, plans)
+  test/              node:test integration tests (auth, programs, minors, plans, advisor)
 frontend/
   src/
     api.js           Fetch client for the backend (auth-aware, sends the session cookie)
     components/       ProgramSelector, MinorSelector, YearSelector, Sidebar,
                        PlannerBoard, CourseMap, GpaPanel, SavedPlans, CourseDetails,
-                       ThemeToggle, AuthPanel
+                       ThemeToggle, AuthPanel, GraduationForecast, RecommendationsPanel,
+                       AdvisorDashboard
     utils/            scheduler.js + scheduler.test.js (scheduling/conflicts/year-term
-                       labeling/catalog merging), gpa.js + gpa.test.js (GPA/category math),
-                       categoryColor.js
+                       labeling/catalog merging/graduation forecast/bottleneck analysis),
+                       recommend.js + recommend.test.js (course recommendations),
+                       gpa.js + gpa.test.js (GPA/category math), categoryColor.js
     App.jsx           Top-level state, theme, auth, and layout
 .github/workflows/
   ci.yml             Runs backend tests, frontend tests, lint, and build on push/PR
@@ -125,20 +142,23 @@ frontend/
 ## Testing
 
 ```bash
-npm run test --workspace backend    # 17 integration tests (node:test) against a real in-process server
-npm run test --workspace frontend   # 30 unit tests (Vitest) for the scheduling and GPA engines
+npm run test --workspace backend    # 23 integration tests (node:test) against a real in-process server
+npm run test --workspace frontend   # 46 unit tests (Vitest) for the scheduling, GPA, forecast, and recommendation engines
 ```
 
-Backend tests spin up the real Express app (via `createApp()`) on an ephemeral port against a throwaway SQLite database per test file — no mocking. They cover the full auth flow (signup validation, login, session cookies, logout), catalog data integrity (every prerequisite code must exist in its own program/minor's catalog), and per-user plan isolation (one account can never read or modify another's saved plans). Frontend tests exercise the pure scheduling/GPA functions directly.
+Backend tests spin up the real Express app (via `createApp()`) on an ephemeral port against a throwaway SQLite database per test file — no mocking. They cover the full auth flow (signup validation, login, session cookies, logout), catalog data integrity (every prerequisite code must exist in its own program/minor's catalog), per-user plan isolation (one account can never read or modify another's saved plans), and advisor access control (students get 403 on advisor routes; advisors can read any student's plans, leave notes, and set status). Frontend tests exercise the pure scheduling/GPA/forecast/recommendation functions directly, including edge cases like prerequisite cycles and courses that can never be scheduled.
 
 ## Known limitations
 
 - On Render's free tier, the SQLite file is on ephemeral disk, so saved plans and accounts reset on redeploy (see [DEPLOYMENT.md](./DEPLOYMENT.md)).
 - Course catalog edits made in the UI are local to your browser session and aren't written back to the database.
 - No password reset flow — losing your password on the live demo means creating a new account.
+- Advisor analytics are global (across every student/program in the database), not scoped per-institution or per-cohort — fine for a single-deployment demo, would need a tenancy model for a real multi-school rollout.
+- Anyone can sign up as an advisor at sign-up time; there's no verification step gating who gets that role, which is a deliberate simplification for a demo (a real deployment would invite/approve advisors rather than let anyone self-select).
 
 ## Possible next steps
 
 - Password reset / email verification.
-- "What-if" GPA projection (simulate future grades against remaining requirements).
+- Course seat capacity + waitlists, so the availability engine also accounts for a course being full, not just off-term.
+- Advisor-to-student assignment (instead of every advisor seeing every student).
 - CSV/transcript import to auto-populate completed courses.

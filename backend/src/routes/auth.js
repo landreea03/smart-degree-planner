@@ -6,24 +6,26 @@ import { signToken, setAuthCookie, clearAuthCookie, requireAuth } from "../auth.
 const router = Router();
 
 function publicUser(row) {
-  return { id: row.id, email: row.email, name: row.name };
+  return { id: row.id, email: row.email, name: row.name, role: row.role || "student" };
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const VALID_ROLES = new Set(["student", "advisor"]);
 
 router.post("/signup", async (req, res) => {
-  const { email, password, name } = req.body || {};
+  const { email, password, name, role } = req.body || {};
 
   if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: "A valid email is required" });
   if (!password || password.length < 8) return res.status(400).json({ error: "Password must be at least 8 characters" });
+  if (role && !VALID_ROLES.has(role)) return res.status(400).json({ error: "Role must be 'student' or 'advisor'" });
 
   const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email.toLowerCase());
   if (existing) return res.status(409).json({ error: "An account with that email already exists" });
 
   const passwordHash = await bcrypt.hash(password, 10);
   const result = db
-    .prepare("INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)")
-    .run(email.toLowerCase(), passwordHash, name || "");
+    .prepare("INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)")
+    .run(email.toLowerCase(), passwordHash, name || "", role || "student");
 
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(result.lastInsertRowid);
   setAuthCookie(res, signToken(user));

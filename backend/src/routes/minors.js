@@ -30,6 +30,7 @@ router.get("/:id/courses", (req, res) => {
       category: "Minor",
       yearLevel: c.year_level,
       term: c.term,
+      offeredTerms: c.offered_terms ? c.offered_terms.split(",") : ["Fall", "Spring", "Summer"],
       prereq: prereqs,
     };
   }

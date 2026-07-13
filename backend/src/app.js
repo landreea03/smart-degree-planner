@@ -8,6 +8,7 @@ import authRouter from "./routes/auth.js";
 import programsRouter from "./routes/programs.js";
 import minorsRouter from "./routes/minors.js";
 import plansRouter from "./routes/plans.js";
+import advisorRouter from "./routes/advisor.js";
 
 /**
  * Builds the configured Express app without starting a listener, so tests
@@ -33,6 +34,7 @@ export function createApp() {
   app.use("/api/programs", programsRouter);
   app.use("/api/minors", minorsRouter);
   app.use("/api/plans", plansRouter);
+  app.use("/api/advisor", advisorRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: "Not found" });

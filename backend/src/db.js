@@ -38,6 +38,7 @@ export function initSchema() {
       category TEXT DEFAULT 'Elective',
       year_level INTEGER NOT NULL DEFAULT 1,
       term TEXT NOT NULL DEFAULT 'Fall',
+      offered_terms TEXT NOT NULL DEFAULT 'Fall,Spring,Summer',
       UNIQUE(program_id, code)
     );
 
@@ -55,8 +56,20 @@ export function initSchema() {
       semesters_json TEXT NOT NULL DEFAULT '[]',
       completed_json TEXT NOT NULL DEFAULT '[]',
       grades_json TEXT NOT NULL DEFAULT '{}',
+      advisor_status TEXT NOT NULL DEFAULT 'none',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS plan_notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      plan_id INTEGER NOT NULL REFERENCES plans(id) ON DELETE CASCADE,
+      author_id INTEGER NOT NULL REFERENCES users(id),
+      author_name TEXT NOT NULL DEFAULT '',
+      course_code TEXT DEFAULT '',
+      semester_index INTEGER,
+      body TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS minors (
@@ -78,6 +91,7 @@ export function initSchema() {
       mode TEXT DEFAULT 'In-Person',
       year_level INTEGER NOT NULL DEFAULT 1,
       term TEXT NOT NULL DEFAULT 'Fall',
+      offered_terms TEXT NOT NULL DEFAULT 'Fall,Spring,Summer',
       UNIQUE(minor_id, code)
     );
 
@@ -92,6 +106,7 @@ export function initSchema() {
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       name TEXT DEFAULT '',
+      role TEXT NOT NULL DEFAULT 'student',
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
@@ -115,12 +130,28 @@ function migrate() {
   if (!courseCols.has("term")) {
     db.exec("ALTER TABLE courses ADD COLUMN term TEXT NOT NULL DEFAULT 'Fall'");
   }
+  if (!courseCols.has("offered_terms")) {
+    db.exec("ALTER TABLE courses ADD COLUMN offered_terms TEXT NOT NULL DEFAULT 'Fall,Spring,Summer'");
+  }
+
+  const minorCourseCols = new Set(db.prepare("PRAGMA table_info(minor_courses)").all().map((c) => c.name));
+  if (!minorCourseCols.has("offered_terms")) {
+    db.exec("ALTER TABLE minor_courses ADD COLUMN offered_terms TEXT NOT NULL DEFAULT 'Fall,Spring,Summer'");
+  }
 
   const planCols = new Set(db.prepare("PRAGMA table_info(plans)").all().map((c) => c.name));
   if (!planCols.has("user_id")) {
     // Nullable: existing plans predate accounts and have no owner. They're
     // simply excluded once routes filter by user_id — acceptable for a demo.
     db.exec("ALTER TABLE plans ADD COLUMN user_id INTEGER REFERENCES users(id)");
+  }
+  if (!planCols.has("advisor_status")) {
+    db.exec("ALTER TABLE plans ADD COLUMN advisor_status TEXT NOT NULL DEFAULT 'none'");
+  }
+
+  const userCols = new Set(db.prepare("PRAGMA table_info(users)").all().map((c) => c.name));
+  if (!userCols.has("role")) {
+    db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'student'");
   }
 }
 

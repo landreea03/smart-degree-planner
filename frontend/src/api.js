@@ -37,10 +37,21 @@ export const api = {
   updatePlan: (id, plan) => request(`/api/plans/${id}`, { method: "PUT", body: JSON.stringify(plan) }),
   deletePlan: (id) => request(`/api/plans/${id}`, { method: "DELETE" }),
 
-  signup: (email, password, name) => request("/api/auth/signup", { method: "POST", body: JSON.stringify({ email, password, name }) }),
+  signup: (email, password, name, role) =>
+    request("/api/auth/signup", { method: "POST", body: JSON.stringify({ email, password, name, role }) }),
   login: (email, password) => request("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   logout: () => request("/api/auth/logout", { method: "POST" }),
   me: () => request("/api/auth/me"),
+
+  // Advisor-only endpoints (403 for student accounts).
+  getStudents: () => request("/api/advisor/students"),
+  getStudentPlans: (studentId) => request(`/api/advisor/students/${studentId}/plans`),
+  getAdvisorPlan: (planId) => request(`/api/advisor/plans/${planId}`),
+  addPlanNote: (planId, note) =>
+    request(`/api/advisor/plans/${planId}/notes`, { method: "POST", body: JSON.stringify(note) }),
+  setPlanStatus: (planId, status) =>
+    request(`/api/advisor/plans/${planId}/status`, { method: "PUT", body: JSON.stringify({ status }) }),
+  getAdvisorAnalytics: () => request("/api/advisor/analytics"),
 };
 
 export default api;

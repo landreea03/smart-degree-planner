@@ -112,6 +112,143 @@ export function termLabel(index, { startYear = 1, includeSummer = false } = {}) 
 }
 
 /* =======================
+   GRADUATION FORECAST
+   Real degree catalogs don't offer every course every semester (capstones
+   and seminars often run once a year). That turns "when will I graduate"
+   into a genuine constraint-satisfaction problem: a greedy multi-semester
+   simulator that respects prerequisites AND term availability, plus a
+   critical-path analysis that flags which courses are actually constraining
+   the timeline.
+======================= */
+
+/** Whether `course` is offered in the given term name ("Fall"/"Spring"/"Summer"). */
+export function courseOfferedInTerm(course, termName) {
+  if (!course?.offeredTerms || course.offeredTerms.length === 0) return true;
+  return course.offeredTerms.includes(termName);
+}
+
+/**
+ * For each not-yet-completed course, the length of the longest prerequisite
+ * chain ending at it (a course with no prereqs has depth 1). The course(s)
+ * at the maximum depth sit on the "critical path" — delaying any of them
+ * delays everything that depends on them. Courses offered in only one term
+ * a year are flagged too, since missing that one window costs a full year
+ * regardless of how deep they sit in the chain.
+ */
+export function computeBottlenecks(catalog, completedCourses = []) {
+  const codes = Object.keys(catalog).filter((code) => !completedCourses.includes(code));
+  const depthCache = {};
+
+  function depth(code, seen) {
+    if (depthCache[code] !== undefined) return depthCache[code];
+    if (seen.has(code)) return 0; // cycle guard — shouldn't happen in valid data
+    const course = catalog[code];
+    if (!course || course.prereq.length === 0) return (depthCache[code] = 1);
+
+    const nextSeen = new Set(seen);
+    nextSeen.add(code);
+    const prereqDepths = course.prereq
+      .filter((p) => catalog[p] && !completedCourses.includes(p))
+      .map((p) => depth(p, nextSeen));
+    const maxPrereqDepth = prereqDepths.length ? Math.max(...prereqDepths) : 0;
+    return (depthCache[code] = 1 + maxPrereqDepth);
+  }
+
+  const scored = codes.map((code) => {
+    const course = catalog[code];
+    const offeredTerms = course.offeredTerms || [];
+    return {
+      code,
+      depth: depth(code, new Set()),
+      onceAYear: offeredTerms.length === 1,
+      onlyTerm: offeredTerms.length === 1 ? offeredTerms[0] : null,
+    };
+  });
+
+  const maxDepth = scored.reduce((max, s) => Math.max(max, s.depth), 0);
+
+  return scored
+    .filter((s) => s.depth === maxDepth || s.onceAYear)
+    .sort((a, b) => b.depth - a.depth)
+    .map((s) => ({
+      code: s.code,
+      depth: s.depth,
+      reason: s.onceAYear
+        ? `Only offered in ${s.onlyTerm} — missing that term pushes graduation back a full year`
+        : `Anchors the longest prerequisite chain in your plan (${s.depth} course${s.depth === 1 ? "" : "s"} deep)`,
+    }));
+}
+
+/**
+ * Greedily simulates the rest of a degree, term by term, respecting both
+ * prerequisites and which terms each course is actually offered in, to
+ * project a realistic graduation date instead of assuming every course is
+ * always available. Courses that can never be scheduled (a genuine cycle,
+ * or a prerequisite outside the catalog) are reported in `unresolved`
+ * rather than silently dropped.
+ */
+export function estimateGraduation(catalog, options = {}) {
+  const { maxPerSemester = 4, startYear = 1, includeSummer = false, completedCourses = [] } = options;
+  const termNames = includeSummer ? ["Fall", "Spring", "Summer"] : ["Fall", "Spring"];
+  const termsPerYear = termNames.length;
+
+  const remaining = Object.keys(catalog).filter((code) => !completedCourses.includes(code));
+  const satisfied = new Set(completedCourses);
+  const unplaced = new Set(remaining);
+
+  const semesters = [];
+  let lastPlacedIndex = -1;
+  let consecutiveEmpty = 0;
+  let index = 0;
+  // Generous safety bound: even in the worst case (one course placed per
+  // term, plus waiting out empty terms) this terminates well before it'd
+  // ever matter for a real 4-year catalog.
+  const maxTermsToTry = (remaining.length + 1) * termsPerYear + termsPerYear * 4;
+
+  while (unplaced.size > 0 && index < maxTermsToTry) {
+    const absoluteIndex = index + (startYear - 1) * termsPerYear;
+    const termName = termNames[absoluteIndex % termsPerYear];
+
+    const eligible = [...unplaced]
+      .filter((code) => {
+        const course = catalog[code];
+        if (!course) return false;
+        if (!courseOfferedInTerm(course, termName)) return false;
+        return course.prereq.every((p) => satisfied.has(p));
+      })
+      .sort();
+
+    const chosen = eligible.slice(0, maxPerSemester);
+
+    if (chosen.length > 0) {
+      semesters.push({ index, term: termName, courses: chosen });
+      chosen.forEach((code) => {
+        satisfied.add(code);
+        unplaced.delete(code);
+      });
+      lastPlacedIndex = index;
+      consecutiveEmpty = 0;
+    } else {
+      consecutiveEmpty++;
+      // Nothing placeable across every term type for a full year+ means
+      // what's left is permanently stuck (a cycle, or a prereq that isn't
+      // in the catalog at all) — waiting longer won't help.
+      if (consecutiveEmpty > termsPerYear) break;
+    }
+
+    index++;
+  }
+
+  return {
+    semesters,
+    totalSemesters: lastPlacedIndex + 1,
+    projectedGraduation: lastPlacedIndex >= 0 ? termLabel(lastPlacedIndex, { startYear, includeSummer }) : null,
+    bottlenecks: computeBottlenecks(catalog, completedCourses),
+    unresolved: [...unplaced],
+  };
+}
+
+/* =======================
    HELPERS
 ======================= */
 

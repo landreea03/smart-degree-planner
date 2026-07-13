@@ -11,6 +11,9 @@ import YearSelector from "./components/YearSelector";
 import CourseMap from "./components/CourseMap";
 import ThemeToggle from "./components/ThemeToggle";
 import AuthPanel from "./components/AuthPanel";
+import GraduationForecast from "./components/GraduationForecast";
+import RecommendationsPanel from "./components/RecommendationsPanel";
+import AdvisorDashboard from "./components/AdvisorDashboard";
 import api from "./api";
 import {
   detectConflicts,
@@ -68,6 +71,8 @@ export default function App() {
   // ----- auth -----
   const [currentUser, setCurrentUser] = useState(null);
   const [authBusy, setAuthBusy] = useState(false);
+  // Advisors can switch between their own planner and the advisor dashboard.
+  const [topLevelView, setTopLevelView] = useState("planner");
 
   const boardRef = useRef(null);
 
@@ -171,6 +176,20 @@ export default function App() {
 
   const handleAddSemester = () => {
     setBoard((b) => ({ ...b, semesters: [...b.semesters, []] }));
+  };
+
+  // Turns a set of recommended course codes into a brand-new scheduled
+  // semester in one click, pulling those codes out of the unscheduled pool.
+  const handleAddRecommendedSemester = (codes) => {
+    setBoard((b) => {
+      const nextSemesters = [...b.semesters, codes];
+      recomputeConflicts(nextSemesters);
+      return {
+        unscheduled: b.unscheduled.filter((c) => !codes.includes(c)),
+        semesters: nextSemesters,
+      };
+    });
+    setActivePlanId(null);
   };
 
   const handleRemoveSemester = (index) => {
@@ -366,6 +385,7 @@ export default function App() {
     } finally {
       setCurrentUser(null);
       setActivePlanId(null);
+      setTopLevelView("planner");
       setAuthBusy(false);
     }
   };
@@ -398,9 +418,19 @@ export default function App() {
             Smart Degree Planner
           </div>
           <div className="topbar-actions">
-            <button className="btn btn-ghost" onClick={handleExportPdf}>
-              ⬇ Export PDF
-            </button>
+            {currentUser?.role === "advisor" && (
+              <button
+                className="btn btn-ghost"
+                onClick={() => setTopLevelView((v) => (v === "advisor" ? "planner" : "advisor"))}
+              >
+                {topLevelView === "advisor" ? "🗂 My Planner" : "🧑‍🏫 Advisor Dashboard"}
+              </button>
+            )}
+            {topLevelView === "planner" && (
+              <button className="btn btn-ghost" onClick={handleExportPdf}>
+                ⬇ Export PDF
+              </button>
+            )}
             <ThemeToggle theme={theme} onToggle={() => setTheme((t) => (t === "dark" ? "light" : "dark"))} />
             <AuthPanel
               user={currentUser}
@@ -421,6 +451,11 @@ export default function App() {
         </div>
       )}
 
+      {topLevelView === "advisor" && currentUser?.role === "advisor" ? (
+        <div className="page-shell">
+          <AdvisorDashboard />
+        </div>
+      ) : (
       <div className="page-shell">
         <div className="main-layout">
           <div className="sidebar-col">
@@ -466,6 +501,9 @@ export default function App() {
               <button className={`tab-btn ${view === "map" ? "active" : ""}`} onClick={() => setView("map")}>
                 🗺 Course Map
               </button>
+              <button className={`tab-btn ${view === "forecast" ? "active" : ""}`} onClick={() => setView("forecast")}>
+                🎯 Forecast
+              </button>
             </div>
 
             {view === "planner" && (
@@ -510,10 +548,30 @@ export default function App() {
             )}
 
             {!catalogLoading && view === "map" && <CourseMap catalog={masterCatalog} />}
+
+            {!catalogLoading && view === "forecast" && (
+              <GraduationForecast
+                catalog={masterCatalog}
+                completedCourses={completedCourses}
+                maxPerSemester={maxPerSemester}
+                startYear={startYear}
+                includeSummer={includeSummer}
+              />
+            )}
           </div>
 
           <div className="details-panel">
             <GpaPanel completedCourses={completedCourses} grades={grades} catalog={masterCatalog} />
+
+            {!catalogLoading && (
+              <RecommendationsPanel
+                catalog={courses}
+                completedCourses={completedCourses}
+                scheduledCourses={board.semesters.flat()}
+                maxPerSemester={maxPerSemester}
+                onAddAsSemester={handleAddRecommendedSemester}
+              />
+            )}
 
             <SavedPlans
               plans={savedPlans}
@@ -542,6 +600,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -12,6 +12,9 @@ import {
   mergeCatalogs,
   totalCatalogCredits,
   scheduleCourses,
+  courseOfferedInTerm,
+  computeBottlenecks,
+  estimateGraduation,
 } from "./scheduler";
 
 describe("parseTime", () => {
@@ -189,5 +192,100 @@ describe("scheduleCourses", () => {
       B: { prereq: ["A"], credits: 3 },
     };
     expect(() => scheduleCourses(courses, 4, [])).toThrow(/cycle/i);
+  });
+});
+
+describe("courseOfferedInTerm", () => {
+  it("treats a course with no offeredTerms data as always offered", () => {
+    expect(courseOfferedInTerm({}, "Fall")).toBe(true);
+    expect(courseOfferedInTerm({ offeredTerms: [] }, "Fall")).toBe(true);
+  });
+
+  it("respects an explicit offeredTerms list", () => {
+    const course = { offeredTerms: ["Fall"] };
+    expect(courseOfferedInTerm(course, "Fall")).toBe(true);
+    expect(courseOfferedInTerm(course, "Spring")).toBe(false);
+  });
+});
+
+describe("computeBottlenecks", () => {
+  it("flags the course with the longest prerequisite chain", () => {
+    const catalog = {
+      A: { prereq: [], offeredTerms: ["Fall", "Spring"] },
+      B: { prereq: ["A"], offeredTerms: ["Fall", "Spring"] },
+      C: { prereq: ["B"], offeredTerms: ["Fall", "Spring"] }, // depth 3, the deepest chain
+      D: { prereq: [], offeredTerms: ["Fall", "Spring"] }, // depth 1, unrelated
+    };
+    const bottlenecks = computeBottlenecks(catalog, []);
+    const codes = bottlenecks.map((b) => b.code);
+    expect(codes).toContain("C");
+    expect(bottlenecks.find((b) => b.code === "C").depth).toBe(3);
+  });
+
+  it("flags a once-a-year course even if it isn't the deepest chain", () => {
+    const catalog = {
+      A: { prereq: [], offeredTerms: ["Fall", "Spring"] },
+      B: { prereq: ["A"], offeredTerms: ["Fall", "Spring"] }, // depth 2, deepest
+      SEMINAR: { prereq: [], offeredTerms: ["Fall"] }, // depth 1, but once-a-year
+    };
+    const bottlenecks = computeBottlenecks(catalog, []);
+    const seminar = bottlenecks.find((b) => b.code === "SEMINAR");
+    expect(seminar).toBeDefined();
+    expect(seminar.reason).toMatch(/only offered in fall/i);
+  });
+
+  it("excludes already-completed courses", () => {
+    const catalog = {
+      A: { prereq: [], offeredTerms: ["Fall", "Spring"] },
+      B: { prereq: ["A"], offeredTerms: ["Fall", "Spring"] },
+    };
+    const bottlenecks = computeBottlenecks(catalog, ["A", "B"]);
+    expect(bottlenecks).toEqual([]);
+  });
+});
+
+describe("estimateGraduation", () => {
+  it("schedules courses respecting both prerequisites and term availability", () => {
+    const catalog = {
+      CS1411: { prereq: [], credits: 4, offeredTerms: ["Fall", "Spring"] },
+      CS1412: { prereq: ["CS1411"], credits: 4, offeredTerms: ["Fall", "Spring"] },
+      CAPSTONE: { prereq: ["CS1412"], credits: 3, offeredTerms: ["Spring"] }, // only offered in Spring
+    };
+    const result = estimateGraduation(catalog, { maxPerSemester: 4, startYear: 1, completedCourses: [] });
+
+    expect(result.unresolved).toEqual([]);
+    // CAPSTONE can only land in a Spring semester.
+    const capstoneSemester = result.semesters.find((s) => s.courses.includes("CAPSTONE"));
+    expect(capstoneSemester.term).toBe("Spring");
+    expect(result.projectedGraduation).toMatch(/Spring/);
+  });
+
+  it("reports courses that can never be scheduled instead of looping forever", () => {
+    const catalog = {
+      A: { prereq: ["MISSING_PREREQ_NOT_IN_CATALOG"], credits: 3, offeredTerms: ["Fall", "Spring"] },
+      B: { prereq: [], credits: 3, offeredTerms: ["Fall", "Spring"] },
+    };
+    const result = estimateGraduation(catalog, { maxPerSemester: 4 });
+
+    expect(result.unresolved).toEqual(["A"]);
+    expect(result.semesters.flatMap((s) => s.courses)).toEqual(["B"]);
+  });
+
+  it("returns no semesters and a null graduation term when everything is already completed", () => {
+    const catalog = { A: { prereq: [], credits: 3, offeredTerms: ["Fall", "Spring"] } };
+    const result = estimateGraduation(catalog, { completedCourses: ["A"] });
+
+    expect(result.semesters).toEqual([]);
+    expect(result.totalSemesters).toBe(0);
+    expect(result.projectedGraduation).toBeNull();
+  });
+
+  it("never exceeds maxPerSemester courses in any single term", () => {
+    const catalog = {};
+    for (let i = 0; i < 10; i++) {
+      catalog[`C${i}`] = { prereq: [], credits: 3, offeredTerms: ["Fall", "Spring"] };
+    }
+    const result = estimateGraduation(catalog, { maxPerSemester: 3 });
+    result.semesters.forEach((s) => expect(s.courses.length).toBeLessThanOrEqual(3));
   });
 });

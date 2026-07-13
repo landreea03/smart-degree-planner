@@ -6,12 +6,14 @@ export default function AuthPanel({ user, onLogin, onSignup, onLogout, busy }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [role, setRole] = useState("student");
   const [error, setError] = useState(null);
 
   const reset = () => {
     setEmail("");
     setPassword("");
     setName("");
+    setRole("student");
     setError(null);
   };
 
@@ -27,7 +29,7 @@ export default function AuthPanel({ user, onLogin, onSignup, onLogout, busy }) {
       if (mode === "login") {
         await onLogin(email, password);
       } else {
-        await onSignup(email, password, name);
+        await onSignup(email, password, name, role);
       }
       closeAndReset();
     } catch (err) {
@@ -83,12 +85,18 @@ export default function AuthPanel({ user, onLogin, onSignup, onLogout, busy }) {
 
           <form onSubmit={handleSubmit}>
             {mode === "signup" && (
-              <input
-                className="input"
-                placeholder="Name (optional)"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <>
+                <input
+                  className="input"
+                  placeholder="Name (optional)"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
+                  <option value="student">I'm a student</option>
+                  <option value="advisor">I'm an advisor</option>
+                </select>
+              </>
             )}
             <input
               className="input"
